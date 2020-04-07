@@ -4,12 +4,13 @@ import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
+import math
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-server = app.server
+#server = app.server
 
 conf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf.csv', index_col=0)
 conf_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf_pd.csv', index_col=0)
@@ -115,7 +116,7 @@ def update_pd_timeseries(clickData):
     dffc = conf_df_pd[conf_df_pd.iso_alpha == country_iso]
     dffd = deaths_df_pd[deaths_df_pd.iso_alpha == country_iso]
     dffr = rec_df_pd[rec_df_pd.iso_alpha == country_iso]
-    if dffc['Firstdayabove100df'][0] != 'nan':
+    if not math.isnan(dffc['Firstdayabove100df'][0]):
         xc = pd.Series(range(len(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].values)
         xd = pd.Series(range(len(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].index)))
@@ -150,6 +151,7 @@ def update_total_timeseries(clickData):
         yd = pd.Series(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].values)
         xr = pd.Series(range(len(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].index)))
         yr = pd.Series(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].values)
+        title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)'.format(country_name)
     else:
         xc = pd.Series(range(len(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].values)

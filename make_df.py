@@ -45,7 +45,10 @@ for i in range(len(conf_df)):
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet        
 Firstdayabove100df = []
 for row in range(len(conf_df[conf_df.columns[3:]])):
-    Firstdayabove100df.append(conf_df[conf_df.columns[3:]][conf_df[conf_df.columns[3:]] > 100].iloc[row].idxmin())
+    if conf_df[conf_df.columns[-1]][0] > 100:
+        Firstdayabove100df.append(conf_df[conf_df.columns[3:]][conf_df[conf_df.columns[3:]] > 100].iloc[row].idxmin())
+    else:
+        Firstdayabove100df.append('NaN')
     
 conf_df['Firstdayabove100df'] = Firstdayabove100df
 conf_df_pd['Firstdayabove100df'] = Firstdayabove100df
