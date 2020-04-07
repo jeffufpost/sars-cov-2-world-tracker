@@ -9,12 +9,12 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-conf_df = pd.read_csv('data/conf.csv', index_col=0)
-conf_df_pd = pd.read_csv('data/conf_pd.csv', index_col=0)
-deaths_df = pd.read_csv('data/deaths.csv', index_col=0)
-deaths_df_pd = pd.read_csv('data/deaths_pd.csv', index_col=0)
-rec_df = pd.read_csv('data/rec.csv', index_col=0)
-rec_df_pd = pd.read_csv('data/rec_pd.csv', index_col=0)
+conf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf.csv', index_col=0)
+conf_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf_pd.csv', index_col=0)
+deaths_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/deaths.csv', index_col=0)
+deaths_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/deaths_pd.csv', index_col=0)
+rec_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec.csv', index_col=0)
+rec_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0)
 
 fig_map = go.Figure(data=go.Choropleth(
     locations=conf_df['iso_alpha'], # Spatial coordinates
