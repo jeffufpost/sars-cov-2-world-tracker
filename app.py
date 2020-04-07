@@ -116,7 +116,7 @@ def update_pd_timeseries(clickData):
     dffc = conf_df_pd[conf_df_pd.iso_alpha == country_iso]
     dffd = deaths_df_pd[deaths_df_pd.iso_alpha == country_iso]
     dffr = rec_df_pd[rec_df_pd.iso_alpha == country_iso]
-    if not math.isnan(dffc['Firstdayabove100df'][0]):
+    if type(dffc['Firstdayabove100df'][0]) == str:
         xc = pd.Series(range(len(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].values)
         xd = pd.Series(range(len(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].index)))
@@ -144,7 +144,7 @@ def update_total_timeseries(clickData):
     dffc = conf_df[conf_df.iso_alpha == country_iso]
     dffd = deaths_df[deaths_df.iso_alpha == country_iso]
     dffr = rec_df[rec_df.iso_alpha == country_iso]
-    if dffc['Firstdayabove100df'][0] != 'nan':        
+    if type(dffc['Firstdayabove100df'][0]) == str:        
         xc = pd.Series(range(len(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].values)
         xd = pd.Series(range(len(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].index)))
