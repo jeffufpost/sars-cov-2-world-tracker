@@ -124,7 +124,7 @@ def update_pd_timeseries(clickData):
         yd = pd.Series(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].values)
         xr = pd.Series(range(len(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].index)))
         yr = pd.Series(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].values)
-        title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>{}</b>'.format(country_name, fda100)
+        title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>Day 0 corresponds to {}</b>'.format(country_name, fda100)
     else:
         xc = pd.Series(range(len(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].values)
@@ -153,7 +153,7 @@ def update_total_timeseries(clickData):
         yd = pd.Series(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].values)
         xr = pd.Series(range(len(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].index)))
         yr = pd.Series(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].values)
-        title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>{}</b>'.format(country_name, fda100)
+        title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>Day 0 corresponds to {}</b>'.format(country_name, fda100)
     else:
         xc = pd.Series(range(len(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].index)))
         yc = pd.Series(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].values)
