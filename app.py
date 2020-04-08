@@ -116,14 +116,14 @@ def update_pd_timeseries(clickData):
     dffc = conf_df_pd[conf_df_pd.iso_alpha == country_iso]
     dffd = deaths_df_pd[deaths_df_pd.iso_alpha == country_iso]
     dffr = rec_df_pd[rec_df_pd.iso_alpha == country_iso]
-    if type(dffc['Firstdayabove100df'][0]) == str:
-        fda100 = dffc['Firstdayabove100df'][0]
-        xc = pd.Series(range(len(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].index)))
-        yc = pd.Series(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].values)
-        xd = pd.Series(range(len(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].index)))
-        yd = pd.Series(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].values)
-        xr = pd.Series(range(len(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].index)))
-        yr = pd.Series(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].values)
+    if type(dffc['fda100'][0]) == str:
+        fda100 = dffc['fda100'][0]
+        xc = pd.Series(range(len(dffc.loc[country_name,dffc['fda100'].loc[country_name]:dffc.columns[-3]].index)))
+        yc = pd.Series(dffc.loc[country_name,dffc['fda100'].loc[country_name]:dffc.columns[-3]].values)
+        xd = pd.Series(range(len(dffd.loc[country_name,dffd['fda100'].loc[country_name]:dffd.columns[-3]].index)))
+        yd = pd.Series(dffd.loc[country_name,dffd['fda100'].loc[country_name]:dffd.columns[-3]].values)
+        xr = pd.Series(range(len(dffr.loc[country_name,dffr['fda100'].loc[country_name]:dffr.columns[-3]].index)))
+        yr = pd.Series(dffr.loc[country_name,dffr['fda100'].loc[country_name]:dffr.columns[-3]].values)
         title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>Day 0 corresponds to {}</b>'.format(country_name, fda100)
     else:
         xc = pd.Series(range(len(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].index)))
@@ -145,14 +145,14 @@ def update_total_timeseries(clickData):
     dffc = conf_df[conf_df.iso_alpha == country_iso]
     dffd = deaths_df[deaths_df.iso_alpha == country_iso]
     dffr = rec_df[rec_df.iso_alpha == country_iso]
-    if type(dffc['Firstdayabove100df'][0]) == str:        
-        fda100 = dffc['Firstdayabove100df'][0]
-        xc = pd.Series(range(len(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].index)))
-        yc = pd.Series(dffc.loc[country_name,dffc['Firstdayabove100df'].loc[country_name]:dffc.columns[-3]].values)
-        xd = pd.Series(range(len(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].index)))
-        yd = pd.Series(dffd.loc[country_name,dffd['Firstdayabove100df'].loc[country_name]:dffd.columns[-3]].values)
-        xr = pd.Series(range(len(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].index)))
-        yr = pd.Series(dffr.loc[country_name,dffr['Firstdayabove100df'].loc[country_name]:dffr.columns[-3]].values)
+    if type(dffc['fda100'][0]) == str:        
+        fda100 = dffc['fda100'][0]
+        xc = pd.Series(range(len(dffc.loc[country_name,dffc['fda100'].loc[country_name]:dffc.columns[-3]].index)))
+        yc = pd.Series(dffc.loc[country_name,dffc['fda100'].loc[country_name]:dffc.columns[-3]].values)
+        xd = pd.Series(range(len(dffd.loc[country_name,dffd['fda100'].loc[country_name]:dffd.columns[-3]].index)))
+        yd = pd.Series(dffd.loc[country_name,dffd['fda100'].loc[country_name]:dffd.columns[-3]].values)
+        xr = pd.Series(range(len(dffr.loc[country_name,dffr['fda100'].loc[country_name]:dffr.columns[-3]].index)))
+        yr = pd.Series(dffr.loc[country_name,dffr['fda100'].loc[country_name]:dffr.columns[-3]].values)
         title = '<b>{}</b><br>Total numbers (days since 100 confirmed cases)</b><br>Day 0 corresponds to {}</b>'.format(country_name, fda100)
     else:
         xc = pd.Series(range(len(dffc.loc[country_name,'1/22/20':dffc.columns[-3]].index)))

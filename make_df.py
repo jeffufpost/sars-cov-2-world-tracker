@@ -1,3 +1,4 @@
+print("Importing required libraries")
 import pandas as pd
 import pycountry as pc
 
@@ -29,37 +30,21 @@ rec_df = rec_df.groupby("Country/Region")
 rec_df = rec_df.sum().reset_index()
 rec_df = rec_df.set_index('Country/Region')
 
+# Remove Lat and Long columns
+conf_df = conf_df.iloc[:,2:]
+deaths_df = deaths_df.iloc[:,2:]
+rec_df = rec_df.iloc[:,2:]
+
 # Create a per day dataframe
 print("Creating new per day dataframes......")
-conf_df_pd = conf_df.copy()
-deaths_df_pd = deaths_df.copy()
-rec_df_pd = rec_df.copy()
-
-for i in range(len(conf_df)):
-    for j in range(len(conf_df.columns)-1,3,-1):
-        conf_df_pd.iloc[i,j] = conf_df.iloc[i,j] - conf_df.iloc[i,j-1]
-        deaths_df_pd.iloc[i,j] = deaths_df.iloc[i,j] - deaths_df.iloc[i,j-1]
-        rec_df_pd.iloc[i,j] = rec_df.iloc[i,j] - rec_df.iloc[i,j-1]
+# Create per day dataframes for cases, deaths, and recoveries - by pd.DatafRame.diff
+conf_df_pd = conf_df.diff(axis=1)
+deaths_df_pd = deaths_df.diff(axis=1)
+rec_df_pd = rec_df.diff(axis=1)
 
 print("Adding columns of first date above 100 confirmed cases.....")
-# Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet        
-Firstdayabove100df = []
-for row in range(len(conf_df[conf_df.columns[3:]])):
-    if conf_df[conf_df.columns[-1]][0] > 100:
-        Firstdayabove100df.append(conf_df[conf_df.columns[3:]][conf_df[conf_df.columns[3:]] > 100].iloc[row].idxmin())
-    else:
-        Firstdayabove100df.append("")
-    
-conf_df['Firstdayabove100df'] = Firstdayabove100df
-conf_df_pd['Firstdayabove100df'] = Firstdayabove100df
-deaths_df['Firstdayabove100df'] = Firstdayabove100df
-deaths_df_pd['Firstdayabove100df'] = Firstdayabove100df
-rec_df['Firstdayabove100df'] = Firstdayabove100df
-rec_df_pd['Firstdayabove100df'] = Firstdayabove100df
-      
-#df = df.replace('Congo (Brazzaville)', 'Congo')
-#df = df.replace('Congo (Kinshasa)', 'Congo, the Democratic Republic of the')
-#df = df.replace('Burma', 'Myanmar')
+# Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
+fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
 # Add a column with ISO_3 country codes for map locating:
 # Need to modify some country names first:
@@ -79,12 +64,13 @@ deaths_df_pd = deaths_df_pd.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo
 
 print("Looking up ISO_3 country codes and adding them to dataframes.......")
 # Add this as a column
-iso_alpha = []
-for row in range(len(conf_df)):
+def countrycodes(x):
     try:
-        iso_alpha.append(pc.countries.search_fuzzy(conf_df.index[row])[0].alpha_3)
+        return pc.countries.search_fuzzy(x)[0].alpha_3
     except LookupError:
-        iso_alpha.append("")
+        return 'none'
+
+iso_alpha = conf_df.index.to_series().apply(lambda x: countrycodes(x))
 
 conf_df['iso_alpha'] = iso_alpha
 conf_df_pd['iso_alpha'] = iso_alpha
