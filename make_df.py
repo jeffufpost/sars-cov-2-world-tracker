@@ -46,6 +46,13 @@ print("Adding columns of first date above 100 confirmed cases.....")
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
 fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
+conf_df['fda100'] = fda100
+conf_df_pd['fda100'] = fda100
+deaths_df['fda100'] = fda100
+deaths_df_pd['fda100'] = fda100
+rec_df['fda100'] = fda100
+rec_df_pd['fda100'] = fda100
+
 # Add a column with ISO_3 country codes for map locating:
 # Need to modify some country names first:
 conf_df = conf_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
