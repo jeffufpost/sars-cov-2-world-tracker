@@ -1,6 +1,7 @@
 print("Importing required libraries")
 import pandas as pd
 import pycountry as pc
+import numpy as np
 
 # Read data from github
 
@@ -42,49 +43,22 @@ conf_df_pd = conf_df.diff(axis=1)
 deaths_df_pd = deaths_df.diff(axis=1)
 rec_df_pd = rec_df.diff(axis=1)
 
-print("Adding columns of first date above 100 confirmed cases.....")
+print("Create infected dataframe = conf - deaths - recoveries")
+inf_df = conf_df - deaths_df - rec_df
+
+print("Adding dataframes of 1st, 2nd, and 3rd derivatives of number of infected")
+firstdev = inf_df.apply(np.gradient, axis=1)
+seconddev = firstdev.apply(np.gradient)
+thirddev = seconddev.apply(np.gradient)
+
+print("Create series of first date above 100 confirmed cases.....")
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
 fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
-conf_df['fda100'] = fda100
-conf_df_pd['fda100'] = fda100
-deaths_df['fda100'] = fda100
-deaths_df_pd['fda100'] = fda100
-rec_df['fda100'] = fda100
-rec_df_pd['fda100'] = fda100
-
-# Add a column with ISO_3 country codes for map locating:
-# Need to modify some country names first:
-conf_df = conf_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-conf_df_pd = conf_df_pd.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-rec_df = rec_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-rec_df_pd = rec_df_pd.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-deaths_df = deaths_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-deaths_df_pd = deaths_df_pd.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
-
-# Only the two cruise ships are excluded from this
-
-print("Looking up ISO_3 country codes and adding them to dataframes.......")
-# Add this as a column
-def countrycodes(x):
-    try:
-        return pc.countries.search_fuzzy(x)[0].alpha_3
-    except LookupError:
-        return 'none'
-
-iso_alpha = conf_df.index.to_series().apply(lambda x: countrycodes(x))
-
-conf_df['iso_alpha'] = iso_alpha
-conf_df_pd['iso_alpha'] = iso_alpha
-deaths_df['iso_alpha'] = iso_alpha
-deaths_df_pd['iso_alpha'] = iso_alpha
-rec_df['iso_alpha'] = iso_alpha
-rec_df_pd['iso_alpha'] = iso_alpha
+# Below can only be done in the main app.py program instead
+# print("Create series of iso_alpha country codes.....")
+# Nee to run get_iso_alpha3.py first
+# iso_alpha = pd.read_csv('sars-cov-2-world-tracker/data/iso_alpha.csv', index_col=0, header=None).T.iloc[0]
 
 # Save dataframes to csv files
 print("Saving the dataframes to csv files.....")
@@ -94,3 +68,8 @@ deaths_df.to_csv('data/deaths.csv', encoding='utf-8')
 deaths_df_pd.to_csv('data/deaths_pd.csv', encoding='utf-8')
 rec_df.to_csv('data/rec.csv', encoding='utf-8')
 rec_df_pd.to_csv('data/rec_pd.csv', encoding='utf-8')
+inf_df.to_csv('data/inf.csv', encoding='utf-8')
+firstdev.to_csv('data/firstdev.csv', encoding='utf-8', header='Country/Region')
+seconddev.to_csv('data/seconddev.csv', encoding='utf-8', header='Country/Region')
+thirddev.to_csv('data/thirddev.csv', encoding='utf-8', header='Country/Region')
+fda100.to_csv('data/fda100.csv', encoding='utf-8', header='Country/Region')

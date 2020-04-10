@@ -18,10 +18,20 @@ deaths_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2
 deaths_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/deaths_pd.csv', index_col=0)
 rec_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec.csv', index_col=0)
 rec_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0)
+inf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/inf.csv', index_col=0)
+
+firstdev = pd.read_csv('sars-cov-2-world-tracker/data/firstdev.csv', index_col=0, header=0).T.iloc[0]
+seconddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0, header=0).T.iloc[0]
+thirddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0, header=0).T.iloc[0]
+
+fda100 = pd.read_csv('sars-cov-2-world-tracker/data/fda100.csv', index_col=0, header=0).T.iloc[0]
+
+iso_alpha = pd.read_csv('sars-cov-2-world-tracker/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
+
 
 fig_map = go.Figure(data=go.Choropleth(
-    locations=conf_df['iso_alpha'], # Spatial coordinates
-    z = conf_df[conf_df.columns[-3]], # Data to be color-coded (=last day in dataframe)
+    locations=iso_alpha, # Spatial coordinates
+    z = conf_df[conf_df.columns[-1]], # Data to be color-coded (=last day in dataframe)
     locationmode = 'ISO-3', # set of locations match entries in `locations`
     colorscale = 'Reds',
     colorbar_title = "Cases"
