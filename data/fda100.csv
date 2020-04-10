@@ -26,7 +26,7 @@ Brazil,3/13/20
 Brunei,3/24/20
 Bulgaria,3/20/20
 Burkina Faso,3/24/20
-Burma,
+Myanmar,
 Burundi,
 Cabo Verde,
 Cambodia,3/29/20
@@ -37,8 +37,8 @@ Chad,
 Chile,3/16/20
 China,1/22/20
 Colombia,3/19/20
-Congo (Brazzaville),
-Congo (Kinshasa),4/1/20
+Congo,
+"Congo, the Democratic Republic of the",4/1/20
 Costa Rica,3/21/20
 Cote d'Ivoire,3/27/20
 Croatia,3/19/20
@@ -89,11 +89,11 @@ Japan,2/21/20
 Jordan,3/22/20
 Kazakhstan,3/26/20
 Kenya,4/2/20
-"Korea, South",2/20/20
+"Korea, Republic of",2/20/20
 Kosovo,3/31/20
 Kuwait,3/14/20
 Kyrgyzstan,3/31/20
-Laos,
+Lao People's Democratic Republic,
 Latvia,3/20/20
 Lebanon,3/15/20
 Liberia,
@@ -162,7 +162,7 @@ Suriname,
 Sweden,3/6/20
 Switzerland,3/5/20
 Syria,
-Taiwan*,3/19/20
+Taiwan,3/19/20
 Tanzania,
 Thailand,3/15/20
 Timor-Leste,
@@ -179,7 +179,7 @@ Uruguay,3/21/20
 Uzbekistan,3/28/20
 Venezuela,3/26/20
 Vietnam,3/22/20
-West Bank and Gaza,3/29/20
+"Palestine, State of",3/29/20
 Western Sahara,
 Zambia,
 Zimbabwe,
