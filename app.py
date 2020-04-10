@@ -10,7 +10,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-#server = app.server
+server = app.server
 
 conf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf.csv', index_col=0)
 conf_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf_pd.csv', index_col=0)
@@ -68,23 +68,30 @@ app.layout = html.Div([
 def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
     return {
         'data': [
+            {'name': 'Active',
+             "x": xi,
+             "y": yi,
+             'type': 'scatter',
+             'line': {'color':'firebrick'}
+            },
             {'name': 'Recoveries',
              "x": xr,
              "y": yr,
-             'type': 'line'
+             'type': 'scatter',
+             'line': {'color':'green'}
             },
             {'name': 'Deaths',
              "x": xd,
              "y": yd,
-             'type': 'line'},
-            {'name': 'Cases',
+             'type': 'scatter',
+             'line': {'color':'black'}
+            },
+            {'name': 'Cases since start of epidemic',
              "x": xc,
              "y": yc,
-             'type': 'line'},
-            {'name': 'Active',
-             "x": xi,
-             "y": yi,
-             'type': 'line'}
+             'type': 'scatter',
+             'line': {'color':'royalblue', 'width':4, 'dash':'dot'}
+            }
         ],
         'layout': {
             #'height': 350,
@@ -94,28 +101,27 @@ def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
         }
     }
 
-def create_bar_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
+def create_bar_series(xc, yc, xd, yd, xr, yr, title):
     return {
         'data': [
             {'name': 'Recoveries',
              "x": xr,
              "y": yr,
+             'marker': {'color':'green'},
              'type': 'bar'},
             {'name': 'Deaths',
              "x": xd,
              "y": yd,
+             'marker': {'color':'black'},
              'type': 'bar'},
-            {'name': 'Cases',
+            {'name': 'New cases',
              "x": xc,
              "y": yc,
-             'type': 'bar'},
-            {'name': 'Active',
-             "x": xi,
-             "y": yi,
-             'type': 'bar'}
+             'marker': {'color':'firebrick'},
+             'type': 'bar',
+             'barmode': 'group',}
         ],
         'layout': {
-            'barmode': 'stack',
             #'height': 350,
             #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
@@ -154,7 +160,7 @@ def update_pd_timeseries(clickData):
         xi = pd.Series(dffi.T.index.T)
         yi = pd.Series(dffi.values[0].T)
         title = '<b>{}</b><br>Daily numbers (since Jan 22nd, 2020 - still less than 100 confirmed cases)'.format(country_name)
-    return create_bar_series(xc, yc, xd, yd, xr, yr, xi, yi, title)
+    return create_bar_series(xc, yc, xd, yd, xr, yr, title)
 
 @app.callback(
     dash.dependencies.Output('total-time-series', 'figure'),
