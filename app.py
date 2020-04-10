@@ -10,7 +10,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-server = app.server
+#server = app.server
 
 conf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf.csv', index_col=0)
 conf_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf_pd.csv', index_col=0)
@@ -97,7 +97,33 @@ def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
             #'height': 350,
             #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
-            'legend':{'traceorder': 'reversed'}
+            'legend':{'traceorder': 'reversed'},
+            'updatemenus': [{
+                'active': 1,
+                'buttons': [
+                    {'args': [
+                        {'visible': [True, True]}, 
+                        {'yaxis': {'type': 'log'}}
+                    ],
+                    'label': 'Log Scale',
+                    'method': 'update'
+                    },
+                    
+                    {'args': [
+                        {'visible': [True, True]},
+                        {'yaxis': {'type': 'linear'}}
+                    ],
+                     'label': 'Linear Scale',
+                     'method': 'update'}
+                ],
+                'direction': 'down',
+                'pad': {'r': 10, 't': 10},
+                'showactive': True,
+                'x': 0.1,
+                'xanchor': 'left',
+                'y': 1.1,
+                'yanchor': 'top'
+            }]
         }
     }
 
