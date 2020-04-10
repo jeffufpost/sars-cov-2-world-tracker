@@ -20,7 +20,7 @@ rec_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-wo
 rec_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0)
 inf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/inf.csv', index_col=0)
 
-firstdev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/firstddev.csv', index_col=0, header=0).T.iloc[0]
+firstdev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/firstdev.csv', index_col=0, header=0).T.iloc[0]
 seconddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/seconddev.csv', index_col=0, header=0).T.iloc[0]
 thirddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/thirddev.csv', index_col=0, header=0).T.iloc[0]
 
