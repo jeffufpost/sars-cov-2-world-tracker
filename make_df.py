@@ -42,6 +42,11 @@ deaths_df = deaths_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kins
 # Convert country names to correct format for search with pycountry
 rec_df = rec_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
 
+# Convert dates to datime format
+conf_df.columns = pd.to_datetime(conf_df.columns).date
+deaths_df.columns = pd.to_datetime(deaths_df.columns).date
+rec_df.columns = pd.to_datetime(rec_df.columns).date
+
 # Create a per day dataframe
 print("Creating new per day dataframes......")
 # Create per day dataframes for cases, deaths, and recoveries - by pd.DatafRame.diff
