@@ -1,10 +1,14 @@
+## Dash app (https://dash.plot.ly/getting-started)
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 import math
+import datetime
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -12,21 +16,68 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
-conf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf.csv', index_col=0)
-conf_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/conf_pd.csv', index_col=0)
-deaths_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/deaths.csv', index_col=0)
-deaths_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/deaths_pd.csv', index_col=0)
-rec_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec.csv', index_col=0)
-rec_df_pd = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/rec_pd.csv', index_col=0)
-inf_df = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/inf.csv', index_col=0)
+# Import confirmed cases
+conf_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
 
-firstdev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/firstdev.csv', index_col=0, header=0).T.iloc[0]
-seconddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/seconddev.csv', index_col=0, header=0).T.iloc[0]
-thirddev = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/thirddev.csv', index_col=0, header=0).T.iloc[0]
+#Import deaths data
+deaths_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 
-fda100 = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/fda100.csv', index_col=0, header=0).T.iloc[0]
+# Import recovery data
+rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 
 iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
+
+# Wrangle the data
+
+#print("Wrangling data by country.......")
+# Consolidate countries (ie. frenc dom tom are included in France, etc..)
+conf_df = conf_df.groupby("Country/Region")
+conf_df = conf_df.sum().reset_index()
+conf_df = conf_df.set_index('Country/Region')
+
+deaths_df = deaths_df.groupby("Country/Region")
+deaths_df = deaths_df.sum().reset_index()
+deaths_df = deaths_df.set_index('Country/Region')
+
+rec_df = rec_df.groupby("Country/Region")
+rec_df = rec_df.sum().reset_index()
+rec_df = rec_df.set_index('Country/Region')
+
+# Remove Lat and Long columns
+conf_df = conf_df.iloc[:,2:]
+deaths_df = deaths_df.iloc[:,2:]
+rec_df = rec_df.iloc[:,2:]
+
+# Convert country names to correct format for search with pycountry
+conf_df = conf_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
+# Convert country names to correct format for search with pycountry
+deaths_df = deaths_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
+# Convert country names to correct format for search with pycountry
+rec_df = rec_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
+
+# Convert dates to datime format
+conf_df.columns = pd.to_datetime(conf_df.columns).date
+deaths_df.columns = pd.to_datetime(deaths_df.columns).date
+rec_df.columns = pd.to_datetime(rec_df.columns).date
+
+# Create a per day dataframe
+#print("Creating new per day dataframes......")
+# Create per day dataframes for cases, deaths, and recoveries - by pd.DatafRame.diff
+conf_df_pd = conf_df.diff(axis=1)
+deaths_df_pd = deaths_df.diff(axis=1)
+rec_df_pd = rec_df.diff(axis=1)
+
+#print("Create infected dataframe = conf - deaths - recoveries")
+inf_df = conf_df - deaths_df - rec_df
+
+#print("Adding dataframes of 1st, 2nd, and 3rd derivatives of number of infected")
+firstdev = inf_df.apply(np.gradient, axis=1)
+seconddev = firstdev.apply(np.gradient)
+thirddev = seconddev.apply(np.gradient)
+
+#print("Create series of first date above 100 confirmed cases.....")
+# Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
+fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
 fig_map = go.Figure(data=go.Choropleth(
     locations=iso_alpha, # Spatial coordinates
@@ -37,12 +88,12 @@ fig_map = go.Figure(data=go.Choropleth(
 ))
 
 fig_map.update_layout(
-    title_text = 'COVID Cases - click on country of interest',
+    title_text = 'World map - Click on country of interest',
     geo_scope='world'
 )
 
 app.layout = html.Div([
-    html.H2('COVID-19 around the world - click the country of interest',
+    html.H2('COVID-19 around the world',
             style={
                 'textAlign': 'center',
                 "background": "lightblue"
@@ -53,7 +104,7 @@ app.layout = html.Div([
             figure=fig_map,
             clickData={'points': [{'location': 'FRA'}]}
         ),
-    ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="container"),
+    ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns"),
     
     html.Div([
             html.Div([
@@ -166,7 +217,7 @@ def update_pd_timeseries(clickData):
     dffd = deaths_df_pd[deaths_df_pd.index == country_name]
     dffr = rec_df_pd[rec_df_pd.index == country_name]
     dffi = inf_df[inf_df.index==country_name].diff(axis=1)
-    if type(fda100[country_name]) == str:
+    if type(fda100[country_name]) == datetime.date:
         xc = pd.Series(dffc.T[fda100[country_name]:].index.T)
         yc = pd.Series(dffc.T[fda100[country_name]:].values.T[0])
         xd = pd.Series(dffd.T[fda100[country_name]:].index.T)
@@ -199,7 +250,7 @@ def update_total_timeseries(clickData):
     dffd = deaths_df[deaths_df.index == country_name]
     dffr = rec_df[rec_df.index == country_name]
     dffi = inf_df[inf_df.index == country_name]
-    if type(fda100[country_name]) == str:
+    if type(fda100[country_name]) == datetime.date:
         xc = pd.Series(dffc.T[fda100[country_name]:].index.T)
         yc = pd.Series(dffc.T[fda100[country_name]:].values.T[0])
         xd = pd.Series(dffd.T[fda100[country_name]:].index.T)
@@ -223,3 +274,4 @@ def update_total_timeseries(clickData):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
