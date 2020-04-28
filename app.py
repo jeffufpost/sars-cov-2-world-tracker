@@ -79,6 +79,10 @@ thirddev = seconddev.apply(np.gradient)
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
 fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
+# Create dataframe for probability plot
+probevent = iso_alpha.join(inf_df)
+probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
+
 fig_map = go.Figure(data=go.Choropleth(
     locations=iso_alpha, # Spatial coordinates
     z = conf_df[conf_df.columns[-1]], # Data to be color-coded (=last day in dataframe)
@@ -113,8 +117,85 @@ app.layout = html.Div([
             html.Div([
                 dcc.Graph(id='total-time-series')
                 ], className="six columns"),
+            ], className="row"),
+
+    html.Div([
+            html.Div([
+                dcc.Graph(id='prob-group-size')
+                ], className="one columns"),
             ], className="row")
 ])
+
+
+def create_prob_series(xi, yi, title):
+    return {
+        'data': [
+            {'name': 'Probability curve',
+             "x": xi,
+             "y": yi,
+             'type': 'scatter',
+             'line': {'color':'royalblue', 'width':4}
+            }
+        ],
+        'layout': {
+            #'height': 350,
+            #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
+            'title': {'text': title},
+            'updatemenus': [{
+                'active': 1,
+                'buttons': [
+                    {'args': [
+                        {'visible': [True, True]}, 
+                        {'yaxis': {'type': 'log'}}
+                    ],
+                    'label': 'Log Scale',
+                    'method': 'update'
+                    },
+
+                    {'args': [
+                        {'visible': [True, True]},
+                        {'yaxis': {'type': 'linear'}}
+                    ],
+                     'label': 'Linear Scale',
+                     'method': 'update'}
+                ],
+                'direction': 'down',
+                'pad': {'r': 10, 't': 10},
+                'showactive': True,
+                'x': 0.1,
+                'xanchor': 'left',
+                'y': 1.08,
+                'yanchor': 'top'
+            }],
+            'updatemenus': [{
+                'active': 1,
+                'buttons': [
+                    {'args': [
+                        {'visible': [True, True]}, 
+                        {'xaxis': {'type': 'log'}}
+                    ],
+                    'label': 'Log Scale',
+                    'method': 'update'
+                    },
+
+                    {'args': [
+                        {'visible': [True, True]},
+                        {'xaxis': {'type': 'linear'}}
+                    ],
+                     'label': 'Linear Scale',
+                     'method': 'update'}
+                ],
+                'direction': 'down',
+                'pad': {'r': 10, 't': 10},
+                'showactive': True,
+                'x': 0.37,
+                'xanchor': 'left',
+                'y': 1.08,
+                'yanchor': 'top'
+            }]
+        }
+    }
+
 
 def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
     return {
@@ -212,7 +293,7 @@ def create_bar_series(xc, yc, xd, yd, xr, yr, title):
 )
 def update_pd_timeseries(clickData):
     country_iso = clickData['points'][0]['location']
-    country_name = iso_alpha[iso_alpha.values == country_iso].index[0]
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
     dffc = conf_df_pd[conf_df_pd.index == country_name]
     dffd = deaths_df_pd[deaths_df_pd.index == country_name]
     dffr = rec_df_pd[rec_df_pd.index == country_name]
@@ -245,7 +326,7 @@ def update_pd_timeseries(clickData):
 )
 def update_total_timeseries(clickData):
     country_iso = clickData['points'][0]['location']
-    country_name = iso_alpha[iso_alpha.values == country_iso].index[0]
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
     dffc = conf_df[conf_df.index == country_name]
     dffd = deaths_df[deaths_df.index == country_name]
     dffr = rec_df[rec_df.index == country_name]
@@ -271,6 +352,18 @@ def update_total_timeseries(clickData):
         yi = pd.Series(dffi.values[0].T)
         title = '<b>{}</b><br>Total numbers (since Jan 22nd, 2020 - still less than 100 confirmed cases)'.format(country_name)
     return create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title)
+
+@app.callback(
+    dash.dependencies.Output('prob-group-size', 'figure'),
+    [dash.dependencies.Input('country-selector', 'clickData')]
+)
+def update_prob_group_size(clickData):
+    country_iso = clickData['points'][0]['location']
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
+    xi = np.arange(1000)
+    yi = 100 * (1 - (1 - probevent.loc[country_name].prev) ** np.arange(1000)
+    title = '<b>{}</b><br>Probability of having at least 1 infected person at a gathering depending on group size'.format(country_name)
+    return create_prob_series(xi, yi, title)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
