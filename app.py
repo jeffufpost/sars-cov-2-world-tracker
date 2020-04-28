@@ -25,7 +25,8 @@ deaths_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-
 # Import recovery data
 rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 
-iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
+#iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
+iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0)
 
 # Wrangle the data
 
@@ -84,7 +85,7 @@ probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 
 fig_map = go.Figure(data=go.Choropleth(
-    locations=iso_alpha, # Spatial coordinates
+    locations=iso_alpha['alpha-3'], # Spatial coordinates
     z = conf_df[conf_df.columns[-1]], # Data to be color-coded (=last day in dataframe)
     locationmode = 'ISO-3', # set of locations match entries in `locations`
     colorscale = 'Reds',
@@ -109,7 +110,7 @@ app.layout = html.Div([
             clickData={'points': [{'location': 'FRA'}]}
         ),
     ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns"),
-    
+
     html.Div([
             html.Div([
                 dcc.Graph(id='pd-time-series')
@@ -120,10 +121,11 @@ app.layout = html.Div([
             ], className="row"),
 
     html.Div([
-            html.Div([
-                dcc.Graph(id='prob-group-size')
-                ], className="one columns"),
-            ], className="row")
+        dcc.Graph(
+            id='prob-group-size'
+        ),
+    ], style={'width': '50%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns")
+
 ])
 
 
@@ -134,67 +136,18 @@ def create_prob_series(xi, yi, title):
              "x": xi,
              "y": yi,
              'type': 'scatter',
-             'line': {'color':'royalblue', 'width':4}
+             'line': {'color':'royalblue', 'width':2}
             }
         ],
         'layout': {
             #'height': 350,
             #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
-            'updatemenus': [{
-                'active': 1,
-                'buttons': [
-                    {'args': [
-                        {'visible': [True, True]}, 
-                        {'yaxis': {'type': 'log'}}
-                    ],
-                    'label': 'Log Scale',
-                    'method': 'update'
-                    },
-
-                    {'args': [
-                        {'visible': [True, True]},
-                        {'yaxis': {'type': 'linear'}}
-                    ],
-                     'label': 'Linear Scale',
-                     'method': 'update'}
-                ],
-                'direction': 'down',
-                'pad': {'r': 10, 't': 10},
-                'showactive': True,
-                'x': 0.1,
-                'xanchor': 'left',
-                'y': 1.08,
-                'yanchor': 'top'
-            }],
-            'updatemenus': [{
-                'active': 1,
-                'buttons': [
-                    {'args': [
-                        {'visible': [True, True]}, 
-                        {'xaxis': {'type': 'log'}}
-                    ],
-                    'label': 'Log Scale',
-                    'method': 'update'
-                    },
-
-                    {'args': [
-                        {'visible': [True, True]},
-                        {'xaxis': {'type': 'linear'}}
-                    ],
-                     'label': 'Linear Scale',
-                     'method': 'update'}
-                ],
-                'direction': 'down',
-                'pad': {'r': 10, 't': 10},
-                'showactive': True,
-                'x': 0.37,
-                'xanchor': 'left',
-                'y': 1.08,
-                'yanchor': 'top'
-            }]
+            'xaxis': {'title': {'text': 'Group size'}, 'type': 'log'},
+            'yaxis': {'title': {'text': 'Chance of at least 1 active case being present'}, 'type': 'log'}
         }
     }
+
 
 
 def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
@@ -234,13 +187,13 @@ def create_time_series(xc, yc, xd, yd, xr, yr, xi, yi, title):
                 'active': 1,
                 'buttons': [
                     {'args': [
-                        {'visible': [True, True]}, 
+                        {'visible': [True, True]},
                         {'yaxis': {'type': 'log'}}
                     ],
                     'label': 'Log Scale',
                     'method': 'update'
                     },
-                    
+
                     {'args': [
                         {'visible': [True, True]},
                         {'yaxis': {'type': 'linear'}}
@@ -293,7 +246,7 @@ def create_bar_series(xc, yc, xd, yd, xr, yr, title):
 )
 def update_pd_timeseries(clickData):
     country_iso = clickData['points'][0]['location']
-    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == country_iso].index[0]
     dffc = conf_df_pd[conf_df_pd.index == country_name]
     dffd = deaths_df_pd[deaths_df_pd.index == country_name]
     dffr = rec_df_pd[rec_df_pd.index == country_name]
@@ -326,7 +279,7 @@ def update_pd_timeseries(clickData):
 )
 def update_total_timeseries(clickData):
     country_iso = clickData['points'][0]['location']
-    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == country_iso].index[0]
     dffc = conf_df[conf_df.index == country_name]
     dffd = deaths_df[deaths_df.index == country_name]
     dffr = rec_df[rec_df.index == country_name]
@@ -359,9 +312,9 @@ def update_total_timeseries(clickData):
 )
 def update_prob_group_size(clickData):
     country_iso = clickData['points'][0]['location']
-    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == 'FRA'].index[0]
-    xi = np.arange(1000)
-    yi = 100 * (1 - (1 - probevent.loc[country_name].prev) ** np.arange(1000)
+    country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == country_iso].index[0]
+    xi = np.arange(10000)
+    yi = 100 * (1 - (1 - probevent.loc[country_name].prev) ** np.arange(10000))
     title = '<b>{}</b><br>Probability of having at least 1 infected person at a gathering depending on group size'.format(country_name)
     return create_prob_series(xi, yi, title)
 
