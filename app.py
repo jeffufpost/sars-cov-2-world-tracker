@@ -124,27 +124,37 @@ app.layout = html.Div([
         dcc.Graph(
             id='prob-group-size'
         ),
-    ], style={'width': '50%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns")
+    ], style={'width': '80%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns")
 
 ])
 
 
-def create_prob_series(xi, yi, title):
+def create_prob_series(xi, yi, yi5, yi10, title):
     return {
         'data': [
-            {'name': 'Probability curve',
+            {'name': 'Probability curve given current active cases',
              "x": xi,
              "y": yi,
              'type': 'scatter',
-             'line': {'color':'royalblue', 'width':2}
+             'line': {'color':'royalblue', 'width':3}
+            },
+            {'name': 'Probability curve if active cases are underestimated by a factor of 5',
+             "x": xi,
+             "y": yi5,
+             'type': 'scatter',
+             'line': {'color':'firebrick', 'width':2, 'dash':'dot'}
+            },
+            {'name': 'Probability curve if active cases are underestimated by a factor of 10',
+             "x": xi,
+             "y": yi10,
+             'type': 'scatter',
+             'line': {'color':'black', 'width':2, 'dash':'dot'}
             }
         ],
         'layout': {
-            #'height': 350,
-            #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
-            'xaxis': {'title': {'text': 'Group size'}, 'type': 'log'},
-            'yaxis': {'title': {'text': 'Chance of at least 1 active case being present'}, 'type': 'log'}
+            'xaxis': {'title': {'text': "Group size"}, 'type': 'log'},
+            'yaxis': {'title': {'text': "Chance of at least 1 active case being present"}, 'type': 'log'}
         }
     }
 
@@ -315,8 +325,10 @@ def update_prob_group_size(clickData):
     country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == country_iso].index[0]
     xi = np.arange(10000)
     yi = 100 * (1 - (1 - probevent.loc[country_name].prev) ** np.arange(10000))
+    yi5 = 100 * (1 - (1 - 5*probevent.loc[country_name].prev) ** np.arange(10000))
+    yi10 = 100 * (1 - (1 - 10*probevent.loc[country_name].prev) ** np.arange(10000))
     title = '<b>{}</b><br>Probability of having at least 1 infected person at a gathering depending on group size'.format(country_name)
-    return create_prob_series(xi, yi, title)
+    return create_prob_series(xi, yi, yi5, yi10, title)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
