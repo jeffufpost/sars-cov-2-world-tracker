@@ -110,7 +110,7 @@ app.layout = html.Div([
             figure=fig_map,
             clickData={'points': [{'location': 'FRA'}]}
         ),
-    ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns"),
+    ], style={'width': '50%', 'display': 'inline-block', 'padding': '0 20','margin': 'auto'}, className="one columns"),
 
     html.Div([
             html.Div([
