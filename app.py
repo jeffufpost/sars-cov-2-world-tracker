@@ -86,10 +86,11 @@ probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 
 fig_map = go.Figure(data=go.Choropleth(
     locations=iso_alpha['alpha-3'], # Spatial coordinates
-    z = conf_df[conf_df.columns[-1]], # Data to be color-coded (=last day in dataframe)
+#    z = conf_df[conf_df.columns[-1]], # Data to be color-coded (=last day in dataframe)
+    z = probevent['prev']
     locationmode = 'ISO-3', # set of locations match entries in `locations`
     colorscale = 'Reds',
-    colorbar_title = "Cases"
+    colorbar_title = "Prevalence"
 ))
 
 fig_map.update_layout(
