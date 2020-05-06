@@ -4,3 +4,5 @@ venv
 .env
 .ipynb_checkpoints
 *.ipynb
+app.py.bak
+sars-cov-2-world-tracker/*
