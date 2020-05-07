@@ -6,3 +6,4 @@ venv
 *.ipynb
 app.py.bak
 sars-cov-2-world-tracker/*
+countries.geojson

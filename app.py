@@ -82,6 +82,7 @@ fig_map = go.Figure(go.Choroplethmapbox(geojson=departments, locations=single_sh
                                     colorscale="Reds",
                                     featureidkey="properties.code",
                                     customdata=np.array(single_shot[['dep', 'hosp']]),
+                                    colorbar={'title':{'text':'# ICU'}},
                                     hovertemplate =
                                         "Rea: %{z}<br>" +
                                         "Hosp: %{customdata[1]}<br>" +
@@ -100,34 +101,58 @@ fig_fr = create_time_series2(dd.jour.values, dd.rea.values, dd.rad.values, dd.dc
 
 nav = Navbar()
 
-header = html.H2(
-    'COVID-19 in France',
-    style= {
-        'textAlign': 'center',
-        "background": "lightblue"
-    }
+header = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                html.H2(
+                    'COVID-19 in France',
+                    style= {
+                        'textAlign': 'center',
+                        "background": "lightblue"
+                    }
+                )
+            )
+        )
+    ]
 )
 
-map = html.Div([
-    dcc.Graph(
-        id='map_france',
-        figure=fig_map,
-        clickData={'points': [{'location': '01'}]}
-    ),
-], className="container")
+map = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                dcc.Graph(
+                    id='map_france',
+                    figure=fig_map,
+                    clickData={'points': [{'location': '01'}]}
+                )
+            )
+        )
+    ]
+)
 
-doubleplots = html.Div([
-    html.Div([
-        dcc.Graph(
-            id='france-time-series',
-            figure=fig_fr
-        ),
-    ], className="six columns"),
-    html.Div([
-        dcc.Graph(id='dep-time-series'),
-    ], className="six columns"),
-], className="row")
-
+doubleplots = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div([
+                        dcc.Graph(
+                            id='france-time-series',
+                            figure=fig_fr)]),
+                    width=12,
+                    lg=6
+                ),
+                dbc.Col(
+                    html.Div([
+                        dcc.Graph(id='dep-time-series')]),
+                    width=12,
+                    lg=6
+                )
+            ]
+        )
+    ]
+)
 
 def App():
     layout = html.Div([

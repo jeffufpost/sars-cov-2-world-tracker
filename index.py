@@ -3,6 +3,14 @@ import pandas as pd
 import numpy as np
 import datetime
 import math
+from urllib.request import urlopen
+import json
+import requests
+import urllib.request
+import urllib.parse
+import time
+import io
+from bs4 import BeautifulSoup
 # Graphing
 import plotly.graph_objects as go
 import plotly.express as px
@@ -108,6 +116,12 @@ fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 # Create dataframe for probability plot
 probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
+
+# Get world GeoJSON
+from urllib.request import urlopen
+import json
+with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
+  countries = json.load(response)
 
 ##################################
 ##################################

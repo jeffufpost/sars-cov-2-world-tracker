@@ -100,76 +100,86 @@ fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 
+# Get world GeoJSON
+#from urllib.request import urlopen
+#import json
+#with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
+#  countries = json.load(response)
+import json
+data = json.load(open('custom.geojson', 'r'))
+
 # Create map
 fig_map = go.Figure(
-    data=go.Choropleth(
+    data=go.Choroplethmapbox(
+        geojson=data,
         locations=iso_alpha[~iso_alpha.region.isna()]['alpha-3'],
-        z = probevent[~probevent.region.isna()]['prev'],
-        locationmode = 'ISO-3',
-        colorscale = 'Reds',
-        colorbar_title = "Prevalence",        
+        z=probevent[~probevent.region.isna()]['prev'],
+        colorscale="Reds",
+        featureidkey="properties.adm0_a3",
+        colorbar={'title':{'text':'% infected'}},
         customdata=np.array(dd[['Country/Region', 'Conf', 'Deaths', 'Recovered', 'Active']]),
         hovertemplate = 
             "<b>Active:</b> %{customdata[4]}<br>" +
             "<b>Deaths:</b> %{customdata[2]}<br>" +
             "<b>Recoveries:</b> %{customdata[3]}<br>" +
             "<extra><b>%{customdata[0]}</b><br><b>Total cases: </b>%{customdata[1]}<br></extra>",
-    ))
-
-
-
-fig_map.update_layout(
-    title= {
-        'text': 'Click on country of interest',
-        'x':0.5,
-        'y':0.85
-    },
-    geo_scope='world',
-    annotations = [dict(
-        x=0.50,
-        y=0.1,
-        xref='paper',
-        yref='paper',
-        text='Source: <a href="https://github.com/CSSEGISandData/COVID-19">John Hopkins University CSSE</a>',
-        showarrow = False
-    )]
-)
-
+        marker_opacity=1, marker_line_width=2))
+fig_map.update_layout(mapbox_style="carto-positron",
+                  mapbox_zoom=2, mapbox_center = {"lat": 46.372103, "lon": 1.677944})
+fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 ##################################
 ##################################
 
 nav = Navbar()
 
-header = html.H2(
-    'COVID-19 around the world',
-    style= {
-        'textAlign': 'center',
-        "background": "lightblue"
-    }
+header = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                html.H2(
+                    'COVID-19 around the World',
+                    style= {
+                        'textAlign': 'center',
+                        "background": "lightblue"
+                    }
+                )
+            )
+        )
+    ]
 )
 
-map = html.Div([
-    dcc.Graph(
-        id='country-selector',
-        figure=fig_map,
-        clickData={'points': [{'location': 'FRA'}]}
-    ),
-], className="container")
+map = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                dcc.Graph(
+                    id='country-selector',
+                    figure=fig_map,
+                    clickData={'points': [{'location': 'FRA'}]}
+                )
+            )
+        )
+    ]
+)
 
-doubleplots = html.Div([
-    html.Div([
-        dcc.Graph(id='country-bar-series')
-    ], className="six columns"),
-    html.Div([
-        dcc.Graph(id='country-time-series')
-    ], className="six columns"),
-], className="row")
 
-probplot = html.Div([
-    dcc.Graph(id='prob-group-size'),
-], className="container")
+doubleplots = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col([dcc.Graph(id='country-bar-series')], width=12, lg=6),
+                dbc.Col([dcc.Graph(id='country-time-series')], width=12, lg=6),
+            ]
+        )
+    ]
+)
 
+probplot = html.Div(
+    [
+        dbc.Row(dbc.Col(dcc.Graph(id='prob-group-size')))
+    ]
+)
 
 def Homepage():
     layout = html.Div([
