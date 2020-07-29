@@ -10,7 +10,7 @@ Likewise you can click on specific departments to see more detail on the French 
 
 The world map uses [data](https://github.com/CSSEGISandData/COVID-19) aggregated by the John Hopkins University CSSE.
 
-The french map uses hospitalization and intensive care [data](https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/) from Sante Publique France.
+The french map uses hospitalization and intensive care [data](https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/) from Sante Publique France. Testing data found [here](https://www.data.gouv.fr/fr/datasets/donnees-relatives-aux-resultats-des-tests-virologiques-covid-19/).
 
 The site is built using [Plotly Dash](https://plotly.com/dash/) and deployed to [Heroku](https://www.heroku.com/home).
 
