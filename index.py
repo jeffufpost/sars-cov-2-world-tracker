@@ -23,7 +23,7 @@ from dash.dependencies import Output, Input
 # Navbar
 from navbar import Navbar
 
-from app import App, create_time_series2
+from app import App, create_time_series2, create_bar_series2
 from homepage import Homepage, create_bar_series, create_time_series, create_prob_series
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
@@ -127,8 +127,17 @@ with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/da
 ##################################
 # Import french data
 url_cases = 'https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/'
-casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
+url_tests = 'https://www.data.gouv.fr/fr/datasets/donnees-relatives-aux-resultats-des-tests-virologiques-covid-19/'
 
+casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
+casescsvurl2 = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[3].get('href')
+testscsvurl_dep = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
+testscsvurl_nat = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
+
+# get csv files
+cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
+tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
+tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'de': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int})
 
 # Wrangle the data
@@ -136,6 +145,7 @@ animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
 
 single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
 
+dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
 
 
 app.layout = html.Div([
@@ -237,14 +247,34 @@ def update_prob_group_size(clickData):
 )
 def update_total_timeseries(clickData):
     departement = clickData['points'][0]['location']
-    df = animation_shot[animation_shot.dep==departement]
-    x = df.jour.values
-    yrea  = df.rea.values
-    yrad  = df.rad.values
-    ydc   = df.dc.values
-    yhosp = df.hosp.values
+    dfdts = animation_shot[animation_shot.dep==departement]
+    x = dfdts.jour.values
+    yrea  = dfdts.rea.values
+    yrad  = dfdts.rad.values
+    ydc   = dfdts.dc.values
+    yhosp = dfdts.hosp.values
     title = '<b>Departement du {}</b>'.format(departement)
     return create_time_series2(x, yrea, yrad, ydc, yhosp, title)
+
+@app.callback(
+    dash.dependencies.Output('dep-bar-series', 'figure'),
+    [dash.dependencies.Input('map_france', 'clickData')]
+)
+def update_total_barseries(clickData):
+    departement = clickData['points'][0]['location']
+    dfdbs2 = dfdbs[dfdbs.dep == departement]
+    dfdbs2=dfdbs2.fillna(0)
+    dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
+
+    x = dfdbs2.index
+    yc = dfdbs2.P.values
+    yd = dfdbs2.incid_dc.values
+    yr = dfdbs2.incid_rad.values
+    yt = dfdbs2['T'].values
+    yh = dfdbs2.incid_hosp.values
+    yicu = dfdbs2.incid_rea.values
+    title = '<b>Departement du {}</b>'.format(departement)
+    return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
