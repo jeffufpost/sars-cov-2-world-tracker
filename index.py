@@ -248,7 +248,7 @@ def update_prob_group_size(clickData):
 def update_total_timeseries(clickData):
     departement = clickData['points'][0]['location']
     dfdts = animation_shot[animation_shot.dep==departement]
-    x = dfdts.jour.values
+    x = dfdts.jour
     yrea  = dfdts.rea.values
     yrad  = dfdts.rad.values
     ydc   = dfdts.dc.values

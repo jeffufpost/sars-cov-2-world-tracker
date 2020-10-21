@@ -155,7 +155,7 @@ dd2 = dd2.groupby(['jour']).sum()
 
 dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
 
-fig_fr = create_time_series2(dd.jour.values, dd.rea.values, dd.rad.values, dd.dc.values, dd.hosp.values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(dd.jour, dd.rea.values, dd.rad.values, dd.dc.values, dd.hosp.values, '<b>Total pour la France</b>')
 fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
 
 ##################################
