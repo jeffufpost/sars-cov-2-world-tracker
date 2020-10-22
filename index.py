@@ -27,7 +27,9 @@ from app import App, create_time_series2, create_bar_series2
 from homepage import Homepage, create_bar_series, create_time_series, create_prob_series
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
-
+app.get('/.well-known/acme-challenge/:content', function(req, res) {
+  res.send('k82LG9FUiUSdTt5kWxgmM0812brDzrbBquJwD-ahMnE.u9YPRIURaOI9NXIg5qhl__VjiRaecic2haAmh6DWzdw')
+}
 app.config.suppress_callback_exceptions = True
 
 server = app.server
