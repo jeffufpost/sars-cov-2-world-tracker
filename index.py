@@ -23,8 +23,8 @@ from dash.dependencies import Output, Input
 # Navbar
 from navbar import Navbar
 
-from app import App, create_time_series2, create_bar_series2
-from homepage import Homepage, create_bar_series, create_time_series, create_prob_series
+from app import create_time_series2, create_bar_series2
+from homepage import create_bar_series, create_time_series, create_prob_series
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
 
@@ -33,6 +33,7 @@ app.config.suppress_callback_exceptions = True
 server = app.server
 
 ##################################
+#####   DATA    ##################
 ##################################
 # With this:
 
@@ -118,10 +119,9 @@ probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 
 # Get world GeoJSON
-from urllib.request import urlopen
-import json
-with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
-  countries = json.load(response)
+#with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
+#  countries = json.load(response)
+data = json.load(open('custom.geojson', 'r'))
 
 ##################################
 ##################################
@@ -140,13 +140,197 @@ tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
+# Import french geojson data
+with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
+  departments = json.load(response)
+
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
 
 single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
 
+## Change colors to hospitalization rate since last week:
+def get_hosp_rate(i):
+  return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-15]].hosp.values[0]-1
+
+def hosp_to_max(i):
+  return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i].hosp.max()
+
+single_shot['hosp_to_max']=single_shot.dep.apply(lambda x: hosp_to_max(x))
+
+single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
+
+single_shot['color']=single_shot['Hosp_rate']*single_shot['hosp_to_max']
+
+# Make french map
+fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=departments, locations=single_shot.dep, z=single_shot.color,
+                                    colorscale="Reds",
+                                    featureidkey="properties.code",
+                                    customdata=np.array(single_shot[['dep', 'hosp', 'rea']]),
+                                    colorbar={'title':{'text':'Tensions hospitalieres'}},
+                                    hovertemplate =
+                                        "Rea: %{customdata[2]}<br>" +
+                                        "Hosp: %{customdata[1]}<br>" +
+                                        "<extra><b>Departement: %{customdata[0]} </b><br><br></extra>",
+                                    marker_opacity=0.5, marker_line_width=0))
+fig_map_FR.update_layout(mapbox_style="carto-darkmatter",
+                  mapbox_zoom=4, mapbox_center = {"lat": 46.372103, "lon": 1.677944})
+fig_map_FR.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+
+ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
+
+dd2=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
+dd2=dd2.fillna(0)
+dd2 = dd2.groupby(['jour']).sum()
+
 dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
 
+fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
+
+# Create map
+fig_map_WD = go.Figure(
+    data=go.Choroplethmapbox(
+        geojson=data,
+        locations=iso_alpha[~iso_alpha.region.isna()]['alpha-3'],
+        z=probevent[~probevent.region.isna()]['prev'],
+        colorscale="Reds",
+        featureidkey="properties.adm0_a3",
+        colorbar={'title':{'text':'% infected'}},
+        customdata=np.array(dd[['Country/Region', 'Conf', 'Deaths', 'Recovered', 'Active']]),
+        hovertemplate =
+            "<b>Active:</b> %{customdata[4]}<br>" +
+            "<b>Deaths:</b> %{customdata[2]}<br>" +
+            "<b>Recoveries:</b> %{customdata[3]}<br>" +
+            "<extra><b>%{customdata[0]}</b><br><b>Total cases: </b>%{customdata[1]}<br></extra>",
+        marker_opacity=1, marker_line_width=2))
+fig_map_WD.update_layout(mapbox_style="carto-positron",
+                  mapbox_zoom=2, mapbox_center = {"lat": 46.372103, "lon": 1.677944})
+fig_map_WD.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+##################################
+##################################
+
+nav = Navbar()
+
+header_FR = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                html.H2(
+                    'COVID-19 in France',
+                    style= {
+                        'textAlign': 'center',
+                        "background": "lightblue"
+                    }
+                )
+            )
+        )
+    ]
+)
+
+map_FR = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                dcc.Graph(
+                    id='map_france',
+                    figure=fig_map_FR,
+                    clickData={'points': [{'location': '01'}]}
+                )
+            )
+        )
+    ]
+)
+
+doubleplots_FR = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(html.Div([dcc.Graph(id='dep-time-series')]),width=12,lg=6),
+                dbc.Col(html.Div([dcc.Graph(id='dep-bar-series')]),width=12,lg=6)])
+    ]
+)
+
+FRplots = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(html.Div([dcc.Graph(id='france-time-series',figure=fig_fr)]),width=12,lg=6),
+                dbc.Col(html.Div([dcc.Graph(id='france-bar-series', figure=fig_fr_bar)]),width=12,lg=6)])
+    ]
+)
+
+def App():
+    layout = html.Div([
+        nav,
+        header_FR,
+        map_FR,
+        doubleplots_FR,
+        FRplots
+    ])
+    return layout
+
+
+
+header_WD = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                html.H2(
+                    'COVID-19 around the World',
+                    style= {
+                        'textAlign': 'center',
+                        "background": "lightblue"
+                    }
+                )
+            )
+        )
+    ]
+)
+
+map_WD = html.Div(
+    [
+        dbc.Row(
+            dbc.Col(
+                dcc.Graph(
+                    id='country-selector',
+                    figure=fig_map_WD,
+                    clickData={'points': [{'location': 'FRA'}]}
+                )
+            )
+        )
+    ]
+)
+
+
+doubleplots_WD = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col([dcc.Graph(id='country-time-series')], width=12, lg=6),
+                dbc.Col([dcc.Graph(id='country-bar-series')], width=12, lg=6),
+            ]
+        )
+    ]
+)
+
+probplot = html.Div(
+    [
+        dbc.Row(dbc.Col(dcc.Graph(id='prob-group-size')))
+    ]
+)
+
+def Homepage():
+    layout = html.Div([
+    nav,
+    header_WD,
+    map_WD,
+    doubleplots_WD,
+    probplot
+    ])
+    return layout
 
 app.layout = html.Div([
     dcc.Location(id = 'url', refresh = False),
