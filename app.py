@@ -6,7 +6,7 @@ from navbar import Navbar
 ##################################
 ##################################
 
-def create_time_series2(x, yrea, yrad, ydc, yhosp, title):
+def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum, title):
     return {
         'data': [
             {'name': 'Patients en Reanimation',
@@ -29,6 +29,12 @@ def create_time_series2(x, yrea, yrad, ydc, yhosp, title):
              'visible':'legendonly',
              'line': {'color':'black'}
             },
+            {'name': 'ICU capacity',
+             "x": x,
+             "y": ynum,
+             'type': 'scatter',
+             'line': {'color':'firebrick', 'width':4, 'dash':'dot'}
+            },
             {'name': 'Hospitalisations actuelles',
              "x": x,
              "y": yhosp,
@@ -40,8 +46,14 @@ def create_time_series2(x, yrea, yrad, ydc, yhosp, title):
             #'height': 350,
             #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
-            'legend':{'traceorder': 'reversed'}
+            'legend':{'traceorder': 'reversed'},
+            'xaxis': {'rangeselector': {'buttons': [{'count': 7, 'label': '7D', 'step': 'day', 'stepmode': 'backward'},
+                                            {'count': 14, 'label': '2W', 'step': 'day', 'stepmode': 'backward'},
+                                            {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
+                                            {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
+                                            {'step': 'all'}]}
         }
+    }
     }
 
 def create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title):
@@ -84,6 +96,12 @@ def create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title):
             #'height': 350,
             #'margin': {'l': 30, 'b': 30, 'r': 30, 't': 30},
             'title': {'text': title},
-            'legend':{'traceorder': 'reversed'}
+            'legend':{'traceorder': 'reversed'},
+            'xaxis': {'rangeselector': {'buttons': [{'count': 7, 'label': '7D', 'step': 'day', 'stepmode': 'backward'},
+                                            {'count': 14, 'label': '2W', 'step': 'day', 'stepmode': 'backward'},
+                                            {'count': 1, 'label': '1M', 'step': 'month', 'stepmode': 'backward'},
+                                            {'count': 6, 'label': '6M', 'step': 'month', 'stepmode': 'backward'},
+                                            {'step': 'all'}]}
         }
+    }
     }

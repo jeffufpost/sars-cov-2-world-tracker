@@ -140,6 +140,10 @@ tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
+# Add numer of ICU beds
+lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num': int})
+FR=FR.join(lits.set_index('dep'), on='dep')
+
 # Import french geojson data
 with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
   departments = json.load(response)
@@ -151,7 +155,7 @@ single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==
 
 ## Change colors to hospitalization rate since last week:
 def get_hosp_rate(i):
-  return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-15]].hosp.values[0]-1
+  return (animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]+1)/(animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-15]].hosp.values[0]+1)
 
 def hosp_to_max(i):
   return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i].hosp.max()
@@ -160,16 +164,21 @@ single_shot['hosp_to_max']=single_shot.dep.apply(lambda x: hosp_to_max(x))
 
 single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
 
-single_shot['color']=single_shot['Hosp_rate']*single_shot['hosp_to_max']
+single_shot['cap']=100*single_shot.rea/single_shot.num
+single_shot['cap']=single_shot['cap'].astype(int)
+
+single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/single_shot.num
+
+single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
 
 # Make french map
 fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=departments, locations=single_shot.dep, z=single_shot.color,
                                     colorscale="Reds",
                                     featureidkey="properties.code",
-                                    customdata=np.array(single_shot[['dep', 'hosp', 'rea']]),
+                                    customdata=np.array(single_shot[['dep', 'hosp', 'rea', 'cap']]),
                                     colorbar={'title':{'text':'Tensions hospitalieres'}},
                                     hovertemplate =
-                                        "Rea: %{customdata[2]}<br>" +
+                                        "Rea: %{customdata[2]} (%{customdata[3]}%)<br>" +
                                         "Hosp: %{customdata[1]}<br>" +
                                         "<extra><b>Departement: %{customdata[0]} </b><br><br></extra>",
                                     marker_opacity=0.5, marker_line_width=0))
@@ -186,7 +195,8 @@ dd2 = dd2.groupby(['jour']).sum()
 
 dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
 
-fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num.values, '<b>Total pour la France</b>')
+
 fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
 
 # Create map
@@ -437,8 +447,9 @@ def update_total_timeseries(clickData):
     yrad  = dfdts.rad.values
     ydc   = dfdts.dc.values
     yhosp = dfdts.hosp.values
+    ynum  = dfdts.num.values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_time_series2(x, yrea, yrad, ydc, yhosp, title)
+    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum, title)
 
 @app.callback(
     dash.dependencies.Output('dep-bar-series', 'figure'),
