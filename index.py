@@ -141,7 +141,9 @@ tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
 # Add numer of ICU beds
-lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num': int})
+lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
+lits['num']=lits['num1']+lits['num2']
+
 FR=FR.join(lits.set_index('dep'), on='dep')
 
 # Import french geojson data
@@ -176,7 +178,7 @@ fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=departments, locations=single
                                     colorscale="Reds",
                                     featureidkey="properties.code",
                                     customdata=np.array(single_shot[['dep', 'hosp', 'rea', 'cap']]),
-                                    colorbar={'title':{'text':'Tensions hospitalieres'}},
+                                    colorbar={'title':{'text':'Surtensions Réa'}},
                                     hovertemplate =
                                         "Rea: %{customdata[2]} (%{customdata[3]}%)<br>" +
                                         "Hosp: %{customdata[1]}<br>" +
@@ -195,7 +197,7 @@ dd2 = dd2.groupby(['jour']).sum()
 
 dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
 
-fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num.values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
 
 fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
 
@@ -447,9 +449,10 @@ def update_total_timeseries(clickData):
     yrad  = dfdts.rad.values
     ydc   = dfdts.dc.values
     yhosp = dfdts.hosp.values
+    ynum1  = dfdts.num1.values
     ynum  = dfdts.num.values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum, title)
+    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, title)
 
 @app.callback(
     dash.dependencies.Output('dep-bar-series', 'figure'),

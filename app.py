@@ -6,7 +6,7 @@ from navbar import Navbar
 ##################################
 ##################################
 
-def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum, title):
+def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, title):
     return {
         'data': [
             {'name': 'Patients en Reanimation',
@@ -29,9 +29,15 @@ def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum, title):
              'visible':'legendonly',
              'line': {'color':'black'}
             },
-            {'name': 'ICU capacity',
+            {'name': '# Lits réa + intensifs',
              "x": x,
-             "y": ynum,
+             "y": ynum2,
+             'type': 'scatter',
+             'line': {'color':'darkmagenta', 'width':4, 'dash':'dot'}
+            },
+            {'name': '# Lits réa',
+             "x": x,
+             "y": ynum1,
              'type': 'scatter',
              'line': {'color':'firebrick', 'width':4, 'dash':'dot'}
             },
