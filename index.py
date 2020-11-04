@@ -147,7 +147,8 @@ lits['num']=lits['num1']+lits['num2']
 FR=FR.join(lits.set_index('dep'), on='dep')
 
 # Import french geojson data
-with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
+#with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
+with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
   departments = json.load(response)
 
 # Wrangle the data
