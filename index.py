@@ -120,8 +120,8 @@ probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 
 # Get world GeoJSON
 #with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
-#  countries = json.load(response)
-data = json.load(open('custom.geojson', 'r'))
+#    countries_geojson = json.load(response)
+countries_geojson = json.load(open('data/countries.geojson', 'r'))
 
 ##################################
 ##################################
@@ -148,8 +148,9 @@ FR=FR.join(lits.set_index('dep'), on='dep')
 
 # Import french geojson data
 #with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
-with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
-  departments = json.load(response)
+#with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
+#    dep_geojson = json.load(response)
+dep_geojson = json.load(open('data/dep.geojson', 'r'))
 
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
@@ -175,7 +176,7 @@ single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/single_shot.num
 single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
 
 # Make french map
-fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=departments, locations=single_shot.dep, z=single_shot.color,
+fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=dep_geojson, locations=single_shot.dep, z=single_shot.color,
                                     colorscale="Reds",
                                     featureidkey="properties.code",
                                     customdata=np.array(single_shot[['dep', 'hosp', 'rea', 'cap']]),
@@ -205,7 +206,7 @@ fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd
 # Create map
 fig_map_WD = go.Figure(
     data=go.Choroplethmapbox(
-        geojson=data,
+        geojson=countries_geojson,
         locations=iso_alpha[~iso_alpha.region.isna()]['alpha-3'],
         z=probevent[~probevent.region.isna()]['prev'],
         colorscale="Reds",
@@ -276,14 +277,14 @@ FRplots = html.Div(
 )
 
 def App():
-    layout = html.Div([
+    layoutapp = html.Div([
         nav,
         header_FR,
         map_FR,
         doubleplots_FR,
         FRplots
     ])
-    return layout
+    return layoutapp
 
 
 
@@ -336,17 +337,17 @@ probplot = html.Div(
 )
 
 def Homepage():
-    layout = html.Div([
+    layouthome = html.Div([
     nav,
     header_WD,
     map_WD,
     doubleplots_WD,
     probplot
     ])
-    return layout
+    return layouthome
 
 app.layout = html.Div([
-    dcc.Location(id = 'url', refresh = False),
+    dcc.Location(id = 'url', refresh = True),
     html.Div(id = 'page-content')
 ])
 

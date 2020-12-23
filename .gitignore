@@ -8,3 +8,4 @@ app.py.bak
 sars-cov-2-world-tracker/*
 countries.geojson
 .gitignore
+requirements.txt.bkp
