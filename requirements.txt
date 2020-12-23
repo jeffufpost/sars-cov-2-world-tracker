@@ -1,7 +1,6 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-_libgcc_mutex=0.1=main
 backcall=0.2.0=py_0
 beautifulsoup4=4.9.3=pyhb0f4dca_0
 blas=1.0=mkl
