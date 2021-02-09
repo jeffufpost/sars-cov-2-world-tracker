@@ -6,9 +6,15 @@ from navbar import Navbar
 ##################################
 ##################################
 
-def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, title):
+def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, yvacts, title):
     return {
         'data': [
+            {'name': 'Total de vaccinations',
+             "x": x,
+             "y": yvacts,
+             'type': 'scatter',
+             'line': {'color':'lime'}
+            },
             {'name': 'Patients en Reanimation',
              "x": x,
              "y": yrea,
@@ -62,9 +68,14 @@ def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, title):
     }
     }
 
-def create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title):
+def create_bar_series2(x, yc, yd, yr, yt, yh, yicu, yvacbs, title):
     return {
         'data': [
+            {'name': 'Vaccinations',
+             "x": x,
+             "y": yvacbs,
+             'marker': {'color':'lime'},
+             'type': 'bar'},
             {'name': 'Recoveries',
              "x": x,
              "y": yr,

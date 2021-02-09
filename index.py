@@ -128,16 +128,21 @@ countries_geojson = json.load(open('data/countries.geojson', 'r'))
 # Import french data
 url_cases = 'https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/'
 url_tests = 'https://www.data.gouv.fr/fr/datasets/donnees-relatives-aux-resultats-des-tests-virologiques-covid-19/'
+url_vaccines = 'https://www.data.gouv.fr/fr/datasets/donnees-relatives-aux-personnes-vaccinees-contre-la-covid-19-1/'
 
 casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[3].get('href')
 casescsvurl2 = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
 testscsvurl_dep = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
 testscsvurl_nat = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
+vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[17].get('href')
+vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[13].get('href')
 
 # get csv files
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
 tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
+vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=',', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
+vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=',', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
 # Add numer of ICU beds
@@ -154,6 +159,7 @@ dep_geojson = json.load(open('data/dep.geojson', 'r'))
 
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
+animation_shot = pd.merge(animation_shot, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 
 single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
 
@@ -192,16 +198,16 @@ fig_map_FR.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
 ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
+ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
 
-dd2=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
-dd2=dd2.fillna(0)
-dd2 = dd2.groupby(['jour']).sum()
 
-dfdbs=pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour'])
+dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
+dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
+dd2 = dfdbs.groupby(['jour']).sum()
 
-fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, ddd.iloc[:-1,:]['n_cum_dose1'].values, '<b>Total pour la France</b>')
 
-fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, dd2['n_dose1'].values, '<b>Total pour la France</b>')
 
 # Create map
 fig_map_WD = go.Figure(
@@ -453,8 +459,9 @@ def update_total_timeseries(clickData):
     yhosp = dfdts.hosp.values
     ynum1  = dfdts.num1.values
     ynum  = dfdts.num.values
+    yvacts = dfdts.iloc[:-1,:]['n_cum_dose1'].values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, title)
+    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, yvacts, title)
 
 @app.callback(
     dash.dependencies.Output('dep-bar-series', 'figure'),
@@ -473,8 +480,9 @@ def update_total_barseries(clickData):
     yt = dfdbs2['T'].values
     yh = dfdbs2.incid_hosp.values
     yicu = dfdbs2.incid_rea.values
+    yvacbs = dfdbs2['n_dose1'].values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title)
+    return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, yvacbs, title)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
