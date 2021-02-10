@@ -12,7 +12,7 @@ dash-bootstrap-components==0.10.7
 dash-core-components==1.15.0
 dash-html-components==1.1.2
 dash-renderer==1.9.0
-dash-table==4.11.0
+dash-table==4.11.2
 datetime==4.3
 flask==1.1.2
 flask-compress==1.8.0
