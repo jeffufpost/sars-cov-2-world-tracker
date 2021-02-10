@@ -134,8 +134,8 @@ casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_al
 casescsvurl2 = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
 testscsvurl_dep = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
 testscsvurl_nat = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
-vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[17].get('href')
-vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[13].get('href')
+vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[21].get('href')
+vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[17].get('href')
 
 # get csv files
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
