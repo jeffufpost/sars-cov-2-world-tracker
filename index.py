@@ -49,6 +49,7 @@ rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/
 #iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
 iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0)
 
+
 # Wrangle the data
 
 #print("Wrangling data by country.......")
@@ -214,10 +215,10 @@ fig_map_WD = go.Figure(
     data=go.Choroplethmapbox(
         geojson=countries_geojson,
         locations=iso_alpha[~iso_alpha.region.isna()]['alpha-3'],
-        z=probevent[~probevent.region.isna()]['prev'],
+        z=probevent[~probevent.region.isna()]['prev']*100000,
         colorscale="Reds",
         featureidkey="properties.adm0_a3",
-        colorbar={'title':{'text':'% infected'}},
+        colorbar={'title':{'text':'Active/100k'}},
         customdata=np.array(dd[['Country/Region', 'Conf', 'Deaths', 'Recovered', 'Active']]),
         hovertemplate =
             "<b>Active:</b> %{customdata[4]}<br>" +
