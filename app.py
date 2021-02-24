@@ -9,7 +9,7 @@ from navbar import Navbar
 def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, yvacts, title):
     return {
         'data': [
-            {'name': 'Total de vaccinations',
+            {'name': 'Total de vaccinations (first dose)',
              "x": x,
              "y": yvacts,
              'type': 'scatter',
@@ -71,7 +71,7 @@ def create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum2, yvacts, title):
 def create_bar_series2(x, yc, yd, yr, yt, yh, yicu, yvacbs, title):
     return {
         'data': [
-            {'name': 'Vaccinations',
+            {'name': 'Vaccinations (first dose)',
              "x": x,
              "y": yvacbs,
              'marker': {'color':'lime'},
