@@ -142,8 +142,8 @@ vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").f
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
 tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
-vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=',', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
-vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=',', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
+vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
+vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
 # Add numer of ICU beds
