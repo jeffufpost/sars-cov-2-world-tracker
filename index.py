@@ -94,9 +94,9 @@ rec_df_pd = rec_df.diff(axis=1)
 inf_df = conf_df - deaths_df - rec_df
 
 #print("Adding dataframes of 1st, 2nd, and 3rd derivatives of number of infected")
-firstdev = inf_df.apply(np.gradient, axis=1)
-seconddev = firstdev.apply(np.gradient)
-thirddev = seconddev.apply(np.gradient)
+#firstdev = inf_df.apply(np.gradient, axis=1)
+#seconddev = firstdev.apply(np.gradient)
+#thirddev = seconddev.apply(np.gradient)
 
 # Another one to display customdata on hover of the map
 conf = pd.DataFrame(conf_df.stack())
@@ -118,6 +118,14 @@ fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 # Create dataframe for probability plot
 probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
+
+#del inf_df
+#del rec_df
+del rec
+#del conf_df
+del conf
+#del deaths_df
+del deaths
 
 # Get world GeoJSON
 #with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
@@ -146,11 +154,25 @@ vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('
 vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
+
+### Delete data
+del url_cases
+del url_vaccines
+del url_tests
+del casescsvurl
+del casescsvurl2
+del testscsvurl_dep
+del testscsvurl_nat
+del vacscsvurl_dep
+del vacscsvurl_nat
+
 # Add numer of ICU beds
 lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
 lits['num']=lits['num1']+lits['num2']
 
 FR=FR.join(lits.set_index('dep'), on='dep')
+
+del lits
 
 # Import french geojson data
 #with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
@@ -205,6 +227,8 @@ ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
 dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
 dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 dd2 = dfdbs.groupby(['jour']).sum()
+
+#del dfdbs
 
 fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, ddd.iloc[:-1,:]['n_cum_dose1'].values, '<b>Total pour la France</b>')
 
