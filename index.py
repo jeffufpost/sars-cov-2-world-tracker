@@ -88,6 +88,10 @@ rec_df.columns = pd.to_datetime(rec_df.columns).date
 # Create per day dataframes for cases, deaths, and recoveries - by pd.DatafRame.diff
 conf_df_pd = conf_df.diff(axis=1)
 deaths_df_pd = deaths_df.diff(axis=1)
+#rec_df_pd = rec_df.diff(axis=1)
+
+rec_df = conf_df.shift(periods=14, axis=1)-deaths_df#.shift(periods=-7, axis=1)
+rec_df = rec_df#.fillna(0).astype(int)
 rec_df_pd = rec_df.diff(axis=1)
 
 #print("Create infected dataframe = conf - deaths - recoveries")
@@ -118,6 +122,7 @@ fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 # Create dataframe for probability plot
 probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
+#probevent['prev'] = probevent.iloc[:,-8] / probevent['SP.POP.TOTL']
 
 #del inf_df
 #del rec_df
