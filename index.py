@@ -23,7 +23,7 @@ from dash.dependencies import Output, Input
 # Navbar
 from navbar import Navbar
 
-from app import create_time_series2, create_bar_series2
+from app import create_time_series2, create_bar_series2, create_time_series_vacs, create_bar_series_vacs
 from homepage import create_bar_series, create_time_series, create_prob_series
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
@@ -115,7 +115,7 @@ cc = bb[bb.level_1 == bb.level_1.iloc[-1]].reset_index(drop=True)
 dd  = cc[~cc.region.isna()].set_index('alpha-3')
 dd['Active'] = dd.Conf-dd.Deaths-dd.Recovered
 
-#print("Create series of first date above 100 confirmed cases.....")
+#print("Create series_vacs of first date above 100 confirmed cases.....")
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
 fda100 = conf_df[conf_df > 100].apply(pd.Series.first_valid_index, axis=1)
 
@@ -148,15 +148,20 @@ casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_al
 casescsvurl2 = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
 testscsvurl_dep = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[1].get('href')
 testscsvurl_nat = BeautifulSoup(requests.get(url_tests).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
-vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[35].get('href')
-vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[31].get('href')
+#vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[35].get('href')
+#vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[31].get('href')
+vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[19].get('href')
+vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[15].get('href')
 
 # get csv files
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
 tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
-vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
-vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
+#vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
+#vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
+# change in May to reflect change of dataframe from data.gouv.fr
+vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': float, 'n_cum_dose2': float}, parse_dates = ['jour'])
+vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': int, 'n_cum_dose2': int}, parse_dates = ['jour']).drop(columns=['fra'])
 FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 
 
@@ -235,9 +240,22 @@ dd2 = dfdbs.groupby(['jour']).sum()
 
 #del dfdbs
 
-fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, ddd.iloc[:-1,:]['n_cum_dose1'].values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
 
-fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, dd2['n_dose1'].values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
+
+fig_fr_vacs = create_bar_series_vacs(
+    vacs_nat.jour,
+    vacs_nat[vacs_nat.vaccin==1].n_dose1.values,
+    vacs_nat[vacs_nat.vaccin==1].n_dose2.values,
+    vacs_nat[vacs_nat.vaccin==2].n_dose1.values,
+    vacs_nat[vacs_nat.vaccin==2].n_dose2.values,
+    vacs_nat[vacs_nat.vaccin==3].n_dose1.values,
+    vacs_nat[vacs_nat.vaccin==3].n_dose2.values,
+    vacs_nat[vacs_nat.vaccin==4].n_dose1.values,
+    vacs_nat[vacs_nat.vaccin==4].n_dose2.values,
+    title = '<b>Vaccinations en France</b>')
+    
 
 # Create map
 fig_map_WD = go.Figure(
@@ -296,20 +314,29 @@ map_FR = html.Div(
     ]
 )
 
-doubleplots_FR = html.Div(
+doubleplots_time = html.Div(
     [
         dbc.Row(
             [
                 dbc.Col(html.Div([dcc.Graph(id='dep-time-series')]),width=12,lg=6),
-                dbc.Col(html.Div([dcc.Graph(id='dep-bar-series')]),width=12,lg=6)])
+                dbc.Col(html.Div([dcc.Graph(id='france-time-series',figure=fig_fr)]),width=12,lg=6)])
     ]
 )
 
-FRplots = html.Div(
+doubleplots_vacs = html.Div(
     [
         dbc.Row(
             [
-                dbc.Col(html.Div([dcc.Graph(id='france-time-series',figure=fig_fr)]),width=12,lg=6),
+                dbc.Col(html.Div([dcc.Graph(id='dep-bar-series_vacs_dep')]),width=12,lg=6),
+                dbc.Col(html.Div([dcc.Graph(id='dep-bar-series_vacs_nat', figure=fig_fr_vacs)]),width=12,lg=6)])
+    ]
+)
+
+doubleplots_bar = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(html.Div([dcc.Graph(id='dep-bar-series')]),width=12,lg=6),
                 dbc.Col(html.Div([dcc.Graph(id='france-bar-series', figure=fig_fr_bar)]),width=12,lg=6)])
     ]
 )
@@ -319,11 +346,11 @@ def App():
         nav,
         header_FR,
         map_FR,
-        doubleplots_FR,
-        FRplots
+        doubleplots_time,
+        doubleplots_vacs,
+        doubleplots_bar,
     ])
     return layoutapp
-
 
 
 header_WD = html.Div(
@@ -361,8 +388,8 @@ doubleplots_WD = html.Div(
     [
         dbc.Row(
             [
-                dbc.Col([dcc.Graph(id='country-time-series')], width=12, lg=6),
-                dbc.Col([dcc.Graph(id='country-bar-series')], width=12, lg=6),
+                dbc.Col([dcc.Graph(id='country-time-series_vacs')], width=12, lg=6),
+                dbc.Col([dcc.Graph(id='country-bar-series_vacs')], width=12, lg=6),
             ]
         )
     ]
@@ -398,7 +425,7 @@ def display_page(pathname):
         return Homepage()
 
 @app.callback(
-    dash.dependencies.Output('country-bar-series', 'figure'),
+    dash.dependencies.Output('country-bar-series_vacs', 'figure'),
     [dash.dependencies.Input('country-selector', 'clickData')]
 )
 def update_pd_timeseries(clickData):
@@ -431,7 +458,7 @@ def update_pd_timeseries(clickData):
     return create_bar_series(xc, yc, xd, yd, xr, yr, title)
 
 @app.callback(
-    dash.dependencies.Output('country-time-series', 'figure'),
+    dash.dependencies.Output('country-time-series_vacs', 'figure'),
     [dash.dependencies.Input('country-selector', 'clickData')]
 )
 def update_total_timeseries(clickData):
@@ -491,9 +518,8 @@ def update_total_timeseries(clickData):
     yhosp = dfdts.hosp.values
     ynum1  = dfdts.num1.values
     ynum  = dfdts.num.values
-    yvacts = dfdts.iloc[:-1,:]['n_cum_dose1'].values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, yvacts, title)
+    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, title)
 
 @app.callback(
     dash.dependencies.Output('dep-bar-series', 'figure'),
@@ -512,9 +538,44 @@ def update_total_barseries(clickData):
     yt = dfdbs2['T'].values
     yh = dfdbs2.incid_hosp.values
     yicu = dfdbs2.incid_rea.values
-    yvacbs = dfdbs2['n_dose1'].values
     title = '<b>Departement du {}</b>'.format(departement)
-    return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, yvacbs, title)
+    return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title)
+
+@app.callback(
+    dash.dependencies.Output('dep-time-series_vacs', 'figure'),
+    [dash.dependencies.Input('map_france', 'clickData')]
+)
+def update_total_timeseries(clickData):
+    departement = clickData['points'][0]['location']
+    dfdts = animation_shot[animation_shot.dep==departement]
+    x = dfdts.jour
+    yrea  = dfdts.rea.values
+    yrad  = dfdts.rad.values
+    ydc   = dfdts.dc.values
+    yhosp = dfdts.hosp.values
+    ynum1  = dfdts.num1.values
+    ynum  = dfdts.num.values
+    title = '<b>Departement du {}</b>'.format(departement)
+    return create_time_series2(x, yrea, yrad, ydc, yhosp, ynum1, ynum, title)
+
+@app.callback(
+    dash.dependencies.Output('dep-bar-series_vacs_dep', 'figure'),
+    [dash.dependencies.Input('map_france', 'clickData')]
+)
+def update_total_timeseries(clickData):
+    departement = clickData['points'][0]['location']
+    dfdtsv = vacs_dep[vacs_dep.dep == departement]
+    x = dfdtsv.jour
+    y10 = dfdtsv[dfdtsv.vaccin==1].n_dose1.values
+    y11 = dfdtsv[dfdtsv.vaccin==1].n_dose2.values
+    y20 = dfdtsv[dfdtsv.vaccin==2].n_dose1.values
+    y21 = dfdtsv[dfdtsv.vaccin==2].n_dose2.values
+    y30 = dfdtsv[dfdtsv.vaccin==3].n_dose1.values
+    y31 = dfdtsv[dfdtsv.vaccin==3].n_dose2.values
+    y40 = dfdtsv[dfdtsv.vaccin==4].n_dose1.values
+    y41 = dfdtsv[dfdtsv.vaccin==4].n_dose2.values
+    title = '<b>Vaccinations dans le {}</b>'.format(departement)
+    return create_bar_series_vacs(x, y10, y11, y20, y21, y30, y31, y40, y41, title)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
