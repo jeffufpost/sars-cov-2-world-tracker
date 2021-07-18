@@ -8,3 +8,5 @@ app.py.bak
 sars-cov-2-world-tracker/*
 .gitignore
 requirements.txt.bkp
+.vscode/*
+.vscode
