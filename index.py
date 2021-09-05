@@ -214,10 +214,10 @@ single_shot['hosp_to_max']=single_shot.dep.apply(lambda x: hosp_to_max(x))
 
 single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
 
-single_shot['cap']=100*single_shot.rea/single_shot.num
+single_shot['cap']=100*single_shot.rea/(single_shot.num+1)
 single_shot['cap']=single_shot['cap'].astype(int)
 
-single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/single_shot.num
+single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/(single_shot.num+1)
 
 single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
 
