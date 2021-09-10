@@ -124,6 +124,10 @@ probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 #probevent['prev'] = probevent.iloc[:,-8] / probevent['SP.POP.TOTL']
 
+del aa
+del bb
+del cc
+
 #del inf_df
 #del rec_df
 del rec
@@ -245,11 +249,17 @@ dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True),
 dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 dd2 = dfdbs.groupby(['jour']).sum()
 
+dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
+
 #del dfdbs
 
 fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
 
+del ddd
+
 fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
+
+del dd2
 
 fig_fr_vacs = create_bar_series_vacs(
     vacs_nat.jour,
@@ -285,6 +295,9 @@ fig_map_WD = go.Figure(
 fig_map_WD.update_layout(mapbox_style="carto-positron",
                   mapbox_zoom=2, mapbox_center = {"lat": 46.372103, "lon": 1.677944})
 fig_map_WD.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+del countries_geojson
+del dep_geojson
 
 ##################################
 ##################################
@@ -534,8 +547,9 @@ def update_total_timeseries(clickData):
 )
 def update_total_barseries(clickData):
     departement = clickData['points'][0]['location']
-    dfdbs2 = dfdbs[dfdbs.dep == departement]
-    dfdbs2=dfdbs2.fillna(0)
+    #dfdbs2 = dfdbs[dfdbs.dep == departement]
+    dfdbs2 = dfdbs.loc[[departement]]
+    dfdbs2 = dfdbs2.fillna(0)
     dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
 
     x = dfdbs2.index
