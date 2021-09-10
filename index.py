@@ -449,8 +449,28 @@ app.layout = html.Div([
             [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/france':
+        try:
+            del fig_map_WD
+        except UnboundLocalError:
+            pass
         return App()
     else:
+        try:
+            del fig_map_FR
+        except UnboundLocalError:
+            pass        
+        try:
+            del fig_fr_vacs
+        except UnboundLocalError:
+            pass
+        try:
+            del fig_fr
+        except UnboundLocalError:
+            pass
+        try:
+            del fig_fr_bar
+        except UnboundLocalError:
+            pass
         return Homepage()
 
 @app.callback(
