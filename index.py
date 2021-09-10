@@ -166,7 +166,7 @@ testscsvurl_nat = 'https://legacy.data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-
 
 # get csv files
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
-tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
+#tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
 #vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
 #vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
@@ -242,10 +242,17 @@ fig_map_FR.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
 ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
+
+del FR
+
 ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
 
 
 dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
+
+del cases
+del tests_dep
+
 dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 dd2 = dfdbs.groupby(['jour']).sum()
 
@@ -272,6 +279,8 @@ fig_fr_vacs = create_bar_series_vacs(
     vacs_nat[vacs_nat.vaccin==4].n_dose1.values,
     vacs_nat[vacs_nat.vaccin==4].n_dose2.values,
     title = '<b>Vaccinations en France</b>')
+
+del vacs_nat
     
 
 # Create map
