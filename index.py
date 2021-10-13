@@ -253,7 +253,7 @@ dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True),
 del cases
 del tests_dep
 
-dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
+#dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 dd2 = dfdbs.groupby(['jour']).sum()
 
 dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
