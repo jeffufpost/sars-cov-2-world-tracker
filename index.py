@@ -156,12 +156,12 @@ url_vaccines = 'https://legacy.data.gouv.fr/fr/datasets/donnees-relatives-aux-pe
 #vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[31].get('href')
 #vacscsvurl_dep = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[19].get('href')
 #vacscsvurl_nat = BeautifulSoup(requests.get(url_vaccines).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[15].get('href')
-vacscsvurl_dep = 'https://legacy.data.gouv.fr/fr/datasets/r/535f8686-d75d-43d9-94b3-da8cdf850634'
-vacscsvurl_nat = 'https://legacy.data.gouv.fr/fr/datasets/r/b273cf3b-e9de-437c-af55-eda5979e92fc'
-casescsvurl = 'https://legacy.data.gouv.fr/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7'
-casescsvurl2 = 'https://legacy.data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c'
-testscsvurl_dep = 'https://legacy.data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675'
-testscsvurl_nat = 'https://legacy.data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-930a-7b08dc0adc7c'
+vacscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/535f8686-d75d-43d9-94b3-da8cdf850634'
+vacscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/b273cf3b-e9de-437c-af55-eda5979e92fc'
+casescsvurl = 'https://data.gouv.fr/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7'
+casescsvurl2 = 'https://data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c'
+testscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675'
+testscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-930a-7b08dc0adc7c'
 
 
 # get csv files
