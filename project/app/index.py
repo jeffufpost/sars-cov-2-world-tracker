@@ -138,7 +138,7 @@ del deaths
 # Get world GeoJSON
 #with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
 #    countries_geojson = json.load(response)
-countries_geojson = json.load(open('project/app/data/countries.geojson', 'r'))
+countries_geojson = json.load(open('data/countries.geojson', 'r'))
 
 ##################################
 ##################################
@@ -187,7 +187,7 @@ del vacscsvurl_dep
 del vacscsvurl_nat
 
 # Add numer of ICU beds
-lits=pd.read_csv('project/app/data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
+lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
 lits['num']=lits['num1']+lits['num2']
 
 FR=FR.join(lits.set_index('dep'), on='dep')
@@ -198,7 +198,7 @@ del lits
 #with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
 #with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
 #    dep_geojson = json.load(response)
-dep_geojson = json.load(open('project/app/data/dep.geojson', 'r'))
+dep_geojson = json.load(open('data/dep.geojson', 'r'))
 
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
@@ -626,5 +626,5 @@ def update_total_timeseries(clickData):
     title = '<b>Vaccinations dans le {}</b>'.format(departement)
     return create_bar_series_vacs(x, y10, y11, y20, y21, y30, y31, y40, y41, title)
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+#if __name__ == '__main__':
+#    app.run_server(debug=True)
