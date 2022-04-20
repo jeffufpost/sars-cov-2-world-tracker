@@ -16,8 +16,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 # Dash
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
 # Navbar
@@ -47,7 +46,7 @@ deaths_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-
 rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 
 #iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
-iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0)
+iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/project/app/data/iso_alpha.csv', index_col=0, header=0)
 
 
 # Wrangle the data
@@ -139,7 +138,7 @@ del deaths
 # Get world GeoJSON
 #with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
 #    countries_geojson = json.load(response)
-countries_geojson = json.load(open('data/countries.geojson', 'r'))
+countries_geojson = json.load(open('project/app/data/countries.geojson', 'r'))
 
 ##################################
 ##################################
@@ -188,7 +187,7 @@ del vacscsvurl_dep
 del vacscsvurl_nat
 
 # Add numer of ICU beds
-lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
+lits=pd.read_csv('project/app/data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
 lits['num']=lits['num1']+lits['num2']
 
 FR=FR.join(lits.set_index('dep'), on='dep')
@@ -199,7 +198,7 @@ del lits
 #with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
 #with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
 #    dep_geojson = json.load(response)
-dep_geojson = json.load(open('data/dep.geojson', 'r'))
+dep_geojson = json.load(open('project/app/data/dep.geojson', 'r'))
 
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
