@@ -146,9 +146,9 @@ countries_geojson = json.load(open('data/countries.geojson', 'r'))
 ##################################
 ##################################
 # Import french data
-url_cases = 'https://legacy.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/'
-url_tests = 'https://legacy.data.gouv.fr/fr/datasets/donnees-relatives-aux-resultats-des-tests-virologiques-covid-19/'
-url_vaccines = 'https://legacy.data.gouv.fr/fr/datasets/donnees-relatives-aux-personnes-vaccinees-contre-la-covid-19-1/'
+#url_cases = 'https://legacy.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/'
+#url_tests = 'https://legacy.data.gouv.fr/fr/datasets/donnees-relatives-aux-resultats-des-tests-virologiques-covid-19/'
+#url_vaccines = 'https://legacy.data.gouv.fr/fr/datasets/donnees-relatives-aux-personnes-vaccinees-contre-la-covid-19-1/'
 
 #casescsvurl = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[3].get('href')
 #casescsvurl2 = BeautifulSoup(requests.get(url_cases).text, "html.parser").find_all('a', class_="btn btn-sm btn-primary")[5].get('href')
@@ -165,43 +165,40 @@ casescsvurl2 = 'https://data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca
 testscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675'
 testscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-930a-7b08dc0adc7c'
 
-
 # get csv files
 cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
-#tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
+FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
+tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
-#vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour'])
-#vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'n_dose1': int, 'n_cum_dose1': int}, parse_dates = ['jour']).drop(columns=['fra'])
 # change in May to reflect change of dataframe from legacy.data.gouv.fr
 vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': float, 'n_cum_dose2': float}, parse_dates = ['jour'])
 vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': int, 'n_cum_dose2': int}, parse_dates = ['jour']).drop(columns=['fra'])
-FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
-
 
 ### Delete data
-del url_cases
-del url_vaccines
-del url_tests
-del casescsvurl
-del casescsvurl2
-del testscsvurl_dep
-del testscsvurl_nat
-del vacscsvurl_dep
-del vacscsvurl_nat
+#del url_cases
+#del url_vaccines
+#del url_tests
+#del casescsvurl
+#del casescsvurl2
+#del testscsvurl_dep
+#del testscsvurl_nat
+#del vacscsvurl_dep
+#del vacscsvurl_nat
 
 # Add numer of ICU beds
 lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
 lits['num']=lits['num1']+lits['num2']
 
+#FR=FR[FR.sexe=0]  #remove gender distinction
 FR=FR.join(lits.set_index('dep'), on='dep')
 
-del lits
+#del lits
 
 # Import french geojson data
 #with urlopen('https://france-geojson.gregoiredavid.fr/repo/departements.geojson') as response:
 #with urlopen('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson') as response:
 #    dep_geojson = json.load(response)
-dep_geojson = json.load(open('data/dep.geojson', 'r'))
+dep_geojson = json.load(open('data/departements.geojson', 'r'))
 
 # Wrangle the data
 animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
@@ -210,29 +207,34 @@ animation_shot = pd.merge(animation_shot, vacs_dep, how='outer',on=['dep', 'jour
 single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
 
 ## Change colors to hospitalization rate since last week:
-def get_hosp_rate(i):
-  return (animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]+1)/(animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-15]].hosp.values[0]+1)
+#def get_hosp_rate(i):
+#  return (animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]+1)/(animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-15]].hosp.values[0]+1)
 
-def hosp_to_max(i):
-  return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i].hosp.max()
+#def hosp_to_max(i):
+#  return animation_shot[animation_shot.dep==i][animation_shot[animation_shot.dep==i].jour==animation_shot.jour.iloc[-1]].hosp.values[0]/animation_shot[animation_shot.dep==i].hosp.max()
 
-single_shot['hosp_to_max']=single_shot.dep.apply(lambda x: hosp_to_max(x))
+#single_shot['hosp_to_max']=single_shot.dep.apply(lambda x: hosp_to_max(x))
 
-single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
+#single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
 
 single_shot['cap']=100*single_shot.rea/(single_shot.num+1)
 single_shot['cap']=single_shot['cap'].astype(int)
 
-single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/(single_shot.num+1)
+#single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/(single_shot.num+1)
 
-single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
+#single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
+single_shot['color']=single_shot.cap #/(single_shot.num+1)
 
 # Make french map
-fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=dep_geojson, locations=single_shot.dep, z=single_shot.color,
+fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=dep_geojson, 
+                                    locations=single_shot.dep, 
+                                    z=single_shot.color,
+                                    zmin=0,
+                                    zmax=100,
                                     colorscale="Reds",
                                     featureidkey="properties.code",
                                     customdata=np.array(single_shot[['dep', 'hosp', 'rea', 'cap']]),
-                                    colorbar={'title':{'text':'Surtensions Réa'}},
+                                    colorbar={'title':{'text':'Occupation Réa'}},
                                     hovertemplate =
                                         "Rea: %{customdata[2]} (%{customdata[3]}%)<br>" +
                                         "Hosp: %{customdata[1]}<br>" +
@@ -245,15 +247,15 @@ fig_map_FR.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
 
-del FR
+#del FR
 
 ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
 
 
 dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
 
-del cases
-del tests_dep
+#del cases
+#del tests_dep
 
 #dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 dd2 = dfdbs.groupby(['jour']).sum()
@@ -264,11 +266,11 @@ dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
 
 fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
 
-del ddd
+#del ddd
 
 fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
 
-del dd2
+#del dd2
 
 fig_fr_vacs = create_bar_series_vacs(
     vacs_nat.jour,
@@ -282,7 +284,7 @@ fig_fr_vacs = create_bar_series_vacs(
     vacs_nat[vacs_nat.vaccin==4].n_dose2.values,
     title = '<b>Vaccinations en France</b>')
 
-del vacs_nat
+#del vacs_nat
     
 
 # Create map
@@ -307,8 +309,8 @@ fig_map_WD.update_layout(mapbox_style="carto-positron",
                   mapbox_zoom=2, mapbox_center = {"lat": 46.372103, "lon": 1.677944})
 fig_map_WD.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-del countries_geojson
-del dep_geojson
+#del countries_geojson
+#del dep_geojson
 
 ##################################
 ##################################
