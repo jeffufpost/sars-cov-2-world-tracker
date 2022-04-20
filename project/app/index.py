@@ -103,17 +103,19 @@ inf_df = conf_df - deaths_df - rec_df
 #thirddev = seconddev.apply(np.gradient)
 
 # Another one to display customdata on hover of the map
-conf = pd.DataFrame(conf_df.stack())
-conf.rename(columns={0: 'Conf'}, inplace=True)
-deaths = pd.DataFrame(deaths_df.stack())
-deaths.rename(columns={0: 'Deaths'}, inplace=True)
-rec = pd.DataFrame(rec_df.stack())
-rec.rename(columns={0:'Recovered'}, inplace=True)
-aa = conf.join(deaths.join(rec))
-bb = aa.join(iso_alpha).reset_index()
-cc = bb[bb.level_1 == bb.level_1.iloc[-1]].reset_index(drop=True)
-dd  = cc[~cc.region.isna()].set_index('alpha-3')
+#conf = pd.DataFrame(conf_df.stack())
+#conf.rename(columns={0: 'Conf'}, inplace=True)
+#deaths = pd.DataFrame(deaths_df.stack())
+#deaths.rename(columns={0: 'Deaths'}, inplace=True)
+#rec = pd.DataFrame(rec_df.stack())
+#rec.rename(columns={0:'Recovered'}, inplace=True)
+#aa = conf.join(deaths.join(rec))
+#bb = aa.join(iso_alpha).reset_index()
+#cc = bb[bb.level_1 == bb.level_1.iloc[-1]].reset_index(drop=True)
+#dd  = cc[~cc.region.isna()].set_index('alpha-3')
+dd = pd.DataFrame({'Conf':conf_df.iloc[:,-1], 'Deaths':deaths_df.iloc[:,-1], 'Recovered':rec_df.iloc[:,-1]}).join(iso_alpha).reset_index().set_index('alpha-3')
 dd['Active'] = dd.Conf-dd.Deaths-dd.Recovered
+
 
 #print("Create series_vacs of first date above 100 confirmed cases.....")
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
