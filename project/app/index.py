@@ -43,7 +43,8 @@ conf_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19
 deaths_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 
 # Import recovery data
-rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+# Not reliable anymore, simply use shift of 14 days of cases minus the deaths to estimate
+#rec_df = pd.read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 
 #iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/data/iso_alpha.csv', index_col=0, header=0).T.iloc[0]
 iso_alpha = pd.read_csv('https://raw.githubusercontent.com/jeffufpost/sars-cov-2-world-tracker/master/project/app/data/iso_alpha.csv', index_col=0, header=0)
@@ -61,37 +62,37 @@ deaths_df = deaths_df.groupby("Country/Region")
 deaths_df = deaths_df.sum().reset_index()
 deaths_df = deaths_df.set_index('Country/Region')
 
-rec_df = rec_df.groupby("Country/Region")
-rec_df = rec_df.sum().reset_index()
-rec_df = rec_df.set_index('Country/Region')
+#rec_df = rec_df.groupby("Country/Region")
+#rec_df = rec_df.sum().reset_index()
+#rec_df = rec_df.set_index('Country/Region')
 
 # Remove Lat and Long columns
 conf_df = conf_df.iloc[:,2:]
 deaths_df = deaths_df.iloc[:,2:]
-rec_df = rec_df.iloc[:,2:]
+#rec_df = rec_df.iloc[:,2:]
 
 # Convert country names to correct format for search with pycountry
 conf_df = conf_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
 # Convert country names to correct format for search with pycountry
 deaths_df = deaths_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
 # Convert country names to correct format for search with pycountry
-rec_df = rec_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
+#rec_df = rec_df.rename(index={'Congo (Brazzaville)': 'Congo', 'Congo (Kinshasa)': 'Congo, the Democratic Republic of the', 'Burma': 'Myanmar', 'Korea, South': 'Korea, Republic of', 'Laos': "Lao People's Democratic Republic", 'Taiwan*': 'Taiwan', "West Bank and Gaza":"Palestine, State of"})
 
 # Convert dates to datime format
 conf_df.columns = pd.to_datetime(conf_df.columns).date
 deaths_df.columns = pd.to_datetime(deaths_df.columns).date
-rec_df.columns = pd.to_datetime(rec_df.columns).date
+#rec_df.columns = pd.to_datetime(rec_df.columns).date
 
 # Create a per day dataframe
 #print("Creating new per day dataframes......")
 # Create per day dataframes for cases, deaths, and recoveries - by pd.DatafRame.diff
-conf_df_pd = conf_df.diff(axis=1)
-deaths_df_pd = deaths_df.diff(axis=1)
+#conf_df_pd = conf_df.diff(axis=1)
+#deaths_df_pd = deaths_df.diff(axis=1)
 #rec_df_pd = rec_df.diff(axis=1)
 
 rec_df = conf_df.shift(periods=14, axis=1)-deaths_df#.shift(periods=-7, axis=1)
 rec_df = rec_df#.fillna(0).astype(int)
-rec_df_pd = rec_df.diff(axis=1)
+#rec_df_pd = rec_df.diff(axis=1)
 
 #print("Create infected dataframe = conf - deaths - recoveries")
 inf_df = conf_df - deaths_df - rec_df
@@ -123,17 +124,17 @@ probevent = iso_alpha.join(inf_df)
 probevent['prev'] = probevent.iloc[:,-1] / probevent['SP.POP.TOTL']
 #probevent['prev'] = probevent.iloc[:,-8] / probevent['SP.POP.TOTL']
 
-del aa
-del bb
-del cc
+#del aa
+#del bb
+#del cc
 
 #del inf_df
 #del rec_df
-del rec
+#del rec
 #del conf_df
-del conf
+#del conf
 #del deaths_df
-del deaths
+#del deaths
 
 # Get world GeoJSON
 #with urlopen('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson') as response:
@@ -479,9 +480,9 @@ def display_page(pathname):
 def update_pd_timeseries(clickData):
     country_iso = clickData['points'][0]['location']
     country_name = iso_alpha['alpha-3'][iso_alpha['alpha-3'].values == country_iso].index[0]
-    dffc = conf_df_pd[conf_df_pd.index == country_name]
-    dffd = deaths_df_pd[deaths_df_pd.index == country_name]
-    dffr = rec_df_pd[rec_df_pd.index == country_name]
+    dffc = conf_df.diff(axis=1)[conf_df.diff(axis=1).index == country_name]
+    dffd = deaths_df.diff(axis=1)[deaths_df.diff(axis=1).index == country_name]
+    dffr = rec_df.diff(axis=1)[rec_df.diff(axis=1).index == country_name]
     dffi = inf_df[inf_df.index==country_name].diff(axis=1)
     if type(fda100[country_name]) == datetime.date:
         xc = pd.Series(dffc.T[fda100[country_name]:].index.T)
