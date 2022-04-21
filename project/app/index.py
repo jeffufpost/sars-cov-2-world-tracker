@@ -113,9 +113,11 @@ inf_df = conf_df - deaths_df - rec_df
 #bb = aa.join(iso_alpha).reset_index()
 #cc = bb[bb.level_1 == bb.level_1.iloc[-1]].reset_index(drop=True)
 #dd  = cc[~cc.region.isna()].set_index('alpha-3')
-dd = pd.DataFrame({'Conf':conf_df.iloc[:,-1], 'Deaths':deaths_df.iloc[:,-1], 'Recovered':rec_df.iloc[:,-1]}).join(iso_alpha).reset_index().set_index('alpha-3')
+dd = pd.DataFrame({'Conf':conf_df.iloc[:,-1], 'Deaths':deaths_df.iloc[:,-1], 'Recovered':rec_df.iloc[:,-1]}).join(iso_alpha).reset_index() #.set_index('alpha-3')
+dd = dd[~dd['region'].isna()].set_index('alpha-3')
 dd['Active'] = dd.Conf-dd.Deaths-dd.Recovered
-
+#ee = ee[ee.index.isin(iso_alpha['alpha-3'])]
+#ee['Active'] = ee.Conf-ee.Deaths-ee.Recovered
 
 #print("Create series_vacs of first date above 100 confirmed cases.....")
 # Create a column containing date at which 100 confirmed cases were reached, NaN if not reached yet
@@ -631,5 +633,5 @@ def update_total_timeseries(clickData):
     title = '<b>Vaccinations dans le {}</b>'.format(departement)
     return create_bar_series_vacs(x, y10, y11, y20, y21, y30, y31, y40, y41, title)
 
-#if __name__ == '__main__':
-#    app.run_server(debug=True)
+if __name__ == '__main__':
+    app.run_server(debug=True)
