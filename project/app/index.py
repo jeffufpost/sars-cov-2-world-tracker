@@ -168,13 +168,17 @@ testscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54
 testscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-930a-7b08dc0adc7c'
 
 # get csv files
-cases = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
-FR = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
-tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
+cases_daily = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
+cases_cum = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
+#tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
 tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
 # change in May to reflect change of dataframe from legacy.data.gouv.fr
-vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': float, 'n_cum_dose2': float}, parse_dates = ['jour'])
-vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_cum_dose1': int, 'n_cum_dose2': int}, parse_dates = ['jour']).drop(columns=['fra'])
+vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour'])
+#vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour']).drop(columns=['fra'])
+
+cases_cum = cases_cum[cases_cum.sexe==0]
+tests_dep = tests_dep[tests_dep['cl_age90']==0]
+
 
 ### Delete data
 #del url_cases
@@ -191,8 +195,10 @@ vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('
 lits=pd.read_csv('data/lits.csv', sep=',', dtype={'dep': str, 'num1': int, 'num2': int})
 lits['num']=lits['num1']+lits['num2']
 
-#FR=FR[FR.sexe=0]  #remove gender distinction
-FR=FR.join(lits.set_index('dep'), on='dep')
+#FR=FR[FR.sexe==0]  #remove gender distinction
+
+cases_cum=cases_cum.join(lits.set_index('dep'), on='dep')
+cases_cum=cases_cum[cases_cum.dep.isin(lits.dep)]
 
 #del lits
 
@@ -203,10 +209,10 @@ FR=FR.join(lits.set_index('dep'), on='dep')
 dep_geojson = json.load(open('data/departements.geojson', 'r'))
 
 # Wrangle the data
-animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
-animation_shot = pd.merge(animation_shot, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
+#animation_shot = FR[FR.sexe==0].groupby(['dep','jour']).sum().reset_index()
+#animation_shot = pd.merge(animation_shot, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
 
-single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
+#single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==0].groupby('dep').sum().reset_index()
 
 ## Change colors to hospitalization rate since last week:
 #def get_hosp_rate(i):
@@ -219,18 +225,26 @@ single_shot = FR[FR.jour==FR.jour.iloc[-1]][FR[FR.jour==FR.jour.iloc[-1]].sexe==
 
 #single_shot['Hosp_rate']=single_shot.dep.apply(lambda x: get_hosp_rate(x))
 
+single_shot=cases_cum[cases_cum.jour==cases_cum.jour.max()].copy()
 single_shot['cap']=100*single_shot.rea/(single_shot.num+1)
 single_shot['cap']=single_shot['cap'].astype(int)
 
 #single_shot['pot']=(0.1*single_shot['hosp']+single_shot['rea'])/(single_shot.num+1)
 
+# NAtional data
+cases_cum_fr=cases_cum.groupby('jour').sum().reset_index()
+cases_daily_fr=cases_daily.groupby('jour').sum().reset_index()
+tests_fr=tests_dep.groupby(['jour']).sum().reset_index()
+vacs_fr=vacs_dep.groupby(['jour', 'vaccin']).sum().reset_index()
+
+
 #single_shot['color']=np.log(single_shot['Hosp_rate']*single_shot['pot']*single_shot['pot'])
-single_shot['color']=single_shot.cap #/(single_shot.num+1)
+#single_shot['color']=single_shot.cap #/(single_shot.num+1)
 
 # Make french map
 fig_map_FR = go.Figure(go.Choroplethmapbox(geojson=dep_geojson, 
                                     locations=single_shot.dep, 
-                                    z=single_shot.color,
+                                    z=single_shot.cap,
                                     zmin=0,
                                     zmax=100,
                                     colorscale="Reds",
@@ -247,43 +261,46 @@ fig_map_FR.update_layout(mapbox_style="carto-darkmatter",
 fig_map_FR.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
-ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
+#ddd = FR[FR.sexe==0].groupby('jour').sum().reset_index()
 
 #del FR
 
-ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
+#ddd = pd.merge(ddd, vacs_nat, how='outer',on=['jour']).fillna(0)
 
 
-dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
+#dfdbs = pd.merge(cases, tests_dep[tests_dep.cl_age90==0].reset_index(drop=True), how='outer',on=['dep', 'jour']).fillna(0)
 
 #del cases
 #del tests_dep
 
 #dfdbs = pd.merge(dfdbs, vacs_dep, how='outer',on=['dep', 'jour']).fillna(0)
-dd2 = dfdbs.groupby(['jour']).sum()
+#dd2 = dfdbs.groupby(['jour']).sum()
+bar_dep = pd.merge(cases_daily, tests_dep, how='outer',on=['dep','jour']).fillna(0)
+bar_fr = pd.merge(cases_daily_fr, tests_fr, how='outer',on=['jour']).fillna(0)
 
-dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
+#dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
 
 #del dfdbs
 
-fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
+#fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
+fig_fr = create_time_series2(cases_cum_fr.jour, cases_cum_fr.rea.values, cases_cum_fr.rad.values, cases_cum_fr.dc.values, cases_cum_fr.hosp.values, cases_cum_fr.num1.values, cases_cum_fr.num.values, '<b>Total pour la France</b>')
 
 #del ddd
 
-fig_fr_bar = create_bar_series2(dd2.index, dd2.P.values, dd2.incid_dc.values, dd2.incid_rad.values, dd2['T'].values, dd2.incid_hosp.values, dd2.incid_rea.values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(bar_fr.index, bar_fr.P.values, bar_fr['incid_dc'].values, bar_fr['incid_rad'].values, bar_fr['T'].values, bar_fr['incid_hosp'].values, bar_fr['incid_rea'].values, '<b>Total pour la France</b>')
 
 #del dd2
 
 fig_fr_vacs = create_bar_series_vacs(
-    vacs_nat.jour,
-    vacs_nat[vacs_nat.vaccin==1].n_dose1.values,
-    vacs_nat[vacs_nat.vaccin==1].n_dose2.values,
-    vacs_nat[vacs_nat.vaccin==2].n_dose1.values,
-    vacs_nat[vacs_nat.vaccin==2].n_dose2.values,
-    vacs_nat[vacs_nat.vaccin==3].n_dose1.values,
-    vacs_nat[vacs_nat.vaccin==3].n_dose2.values,
-    vacs_nat[vacs_nat.vaccin==4].n_dose1.values,
-    vacs_nat[vacs_nat.vaccin==4].n_dose2.values,
+    vacs_fr.jour,
+    vacs_fr[vacs_fr.vaccin==1].n_dose1.values,
+    vacs_fr[vacs_fr.vaccin==1].n_dose2.values,
+    vacs_fr[vacs_fr.vaccin==2].n_dose1.values,
+    vacs_fr[vacs_fr.vaccin==2].n_dose2.values,
+    vacs_fr[vacs_fr.vaccin==3].n_dose1.values,
+    vacs_fr[vacs_fr.vaccin==3].n_dose2.values,
+    vacs_fr[vacs_fr.vaccin==4].n_dose1.values,
+    vacs_fr[vacs_fr.vaccin==4].n_dose2.values,
     title = '<b>Vaccinations en France</b>')
 
 #del vacs_nat
@@ -565,7 +582,7 @@ def update_prob_group_size(clickData):
 )
 def update_total_timeseries(clickData):
     departement = clickData['points'][0]['location']
-    dfdts = animation_shot[animation_shot.dep==departement]
+    dfdts = cases_cum[cases_cum.dep==departement]
     x = dfdts.jour
     yrea  = dfdts.rea.values
     yrad  = dfdts.rad.values
@@ -583,17 +600,17 @@ def update_total_timeseries(clickData):
 def update_total_barseries(clickData):
     departement = clickData['points'][0]['location']
     #dfdbs2 = dfdbs[dfdbs.dep == departement]
-    dfdbs2 = dfdbs.loc[[departement]]
-    dfdbs2 = dfdbs2.fillna(0)
-    dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
-
-    x = dfdbs2.index
-    yc = dfdbs2.P.values
-    yd = dfdbs2.incid_dc.values
-    yr = dfdbs2.incid_rad.values
-    yt = dfdbs2['T'].values
-    yh = dfdbs2.incid_hosp.values
-    yicu = dfdbs2.incid_rea.values
+    #dfdbs2 = dfdbs.loc[[departement]]
+    #dfdbs2 = dfdbs2.fillna(0)
+    #dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
+    dfdbs = bar_dep[bar_dep.dep==departement]
+    x = dfdbs.index
+    yc = dfdbs.P.values
+    yd = dfdbs['incid_dc'].values
+    yr = dfdbs['incid_rad'].values
+    yt = dfdbs['T'].values
+    yh = dfdbs['incid_hosp'].values
+    yicu = dfdbs['incid_rea'].values
     title = '<b>Departement du {}</b>'.format(departement)
     return create_bar_series2(x, yc, yd, yr, yt, yh, yicu, title)
 
@@ -603,7 +620,7 @@ def update_total_barseries(clickData):
 )
 def update_total_timeseries(clickData):
     departement = clickData['points'][0]['location']
-    dfdts = animation_shot[animation_shot.dep==departement]
+    dfdts = vacs_dep[vacs_dep.dep==departement]
     x = dfdts.jour
     yrea  = dfdts.rea.values
     yrad  = dfdts.rad.values
