@@ -650,5 +650,5 @@ def update_total_timeseries(clickData):
     title = '<b>Vaccinations dans le {}</b>'.format(departement)
     return create_bar_series_vacs(x, y10, y11, y20, y21, y30, y31, y40, y41, title)
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+#if __name__ == '__main__':
+#    app.run_server(debug=True)
