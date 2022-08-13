@@ -319,7 +319,7 @@ fig_map_WD = go.Figure(
         colorbar={'title':{'text':'Active/100k'}},
         customdata=np.array(dd[['Country/Region', 'Conf', 'Deaths', 'Recovered', 'Active']]),
         hovertemplate =
-            "<b>Active:</b> %{customdata[4]}<br>" +
+            "<b>Active cases:</b> %{customdata[4]}<br>" +
             "<b>Deaths:</b> %{customdata[2]}<br>" +
             "<b>Recoveries:</b> %{customdata[3]}<br>" +
             "<extra><b>%{customdata[0]}</b><br><b>Total cases: </b>%{customdata[1]}<br></extra>",
