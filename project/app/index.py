@@ -164,14 +164,22 @@ vacscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/535f8686-d75d-43d9-94b3-da8
 vacscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/b273cf3b-e9de-437c-af55-eda5979e92fc'
 casescsvurl = 'https://data.gouv.fr/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7'
 casescsvurl2 = 'https://data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c'
-testscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675'
+#testscsvurl_dep = 'https://data.gouv.fr/fr/datasets/r/406c6a23-e283-4300-9484-54e78c8ae675'
+testscsvurl_dep = 'https://www.data.gouv.fr/fr/datasets/r/674bddab-6d61-4e59-b0bd-0be535490db0'
 testscsvurl_nat = 'https://data.gouv.fr/fr/datasets/r/dd0de5d9-b5a5-4503-930a-7b08dc0adc7c'
 
 # get csv files
 cases_daily = pd.read_csv(io.StringIO(requests.get(casescsvurl2).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'incid_hosp': int, 'incid_rea': int, 'incid_rad': int, 'incid_dc': int}, parse_dates = ['jour'])
 cases_cum = pd.read_csv(io.StringIO(requests.get(casescsvurl).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'hosp': int, 'rea': int, 'rad': int, 'dc': int}, parse_dates = ['jour'])
 #tests_nat = pd.read_csv(io.StringIO(requests.get(testscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'jour': str, 'cl_age90': int, 'P_f': int, 'P_h': int, 'P': int, 'T_f': int, 'T_h': int, 'T': int}, parse_dates = ['jour'])
-tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': int, 'T': int}, parse_dates = ['jour'])
+tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'jour': str, 'cl_age90': int, 'P': float, 'T': float}, decimal=',', parse_dates = ['jour'])
+
+#tests_dep.P.replace(',','.', inplace=True)
+#tests_dep.T.replace(',','.', inplace=True)
+
+#test_dep.P = tests_dep.P.astype(int)
+#test_dep.T = tests_dep.T.astype(int)
+
 # change in May to reflect change of dataframe from legacy.data.gouv.fr
 vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour'])
 #vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour']).drop(columns=['fra'])
