@@ -177,8 +177,8 @@ tests_dep = pd.read_csv(io.StringIO(requests.get(testscsvurl_dep).content.decode
 #tests_dep.P.replace(',','.', inplace=True)
 #tests_dep.T.replace(',','.', inplace=True)
 
-#test_dep.P = tests_dep.P.astype(int)
-#test_dep.T = tests_dep.T.astype(int)
+tests_dep['P'] = tests_dep['P'].astype(int)
+tests_dep['T'] = tests_dep['T'].astype(int)
 
 # change in May to reflect change of dataframe from legacy.data.gouv.fr
 vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('utf-8')), sep=';', dtype={'dep': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour'])
@@ -287,7 +287,6 @@ bar_dep = pd.merge(cases_daily, tests_dep, how='outer',on=['dep','jour']).fillna
 bar_fr = pd.merge(cases_daily_fr, tests_fr, how='outer',on=['jour']).fillna(0)
 
 #dfdbs = dfdbs[dfdbs.cl_age90==0].groupby(['dep','jour']).sum()
-
 #del dfdbs
 
 #fig_fr = create_time_series2(ddd.jour, ddd.rea.values, ddd.rad.values, ddd.dc.values, ddd.hosp.values, ddd.num1.values, ddd.num.values, '<b>Total pour la France</b>')
@@ -295,7 +294,7 @@ fig_fr = create_time_series2(cases_cum_fr.jour, cases_cum_fr.rea.values, cases_c
 
 #del ddd
 
-fig_fr_bar = create_bar_series2(bar_fr.index, bar_fr.P.values, bar_fr['incid_dc'].values, bar_fr['incid_rad'].values, bar_fr['T'].values, bar_fr['incid_hosp'].values, bar_fr['incid_rea'].values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(bar_fr.index, bar_fr['P'].values, bar_fr['incid_dc'].values, bar_fr['incid_rad'].values, bar_fr['T'].values, bar_fr['incid_hosp'].values, bar_fr['incid_rea'].values, '<b>Total pour la France</b>')
 
 #del dd2
 
@@ -408,7 +407,7 @@ def App():
         map_FR,
         doubleplots_time,
         doubleplots_vacs,
-        doubleplots_bar,
+        doubleplots_bar
     ])
     return layoutapp
 
@@ -613,7 +612,7 @@ def update_total_barseries(clickData):
     #dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
     dfdbs = bar_dep[bar_dep.dep==departement]
     x = dfdbs.index
-    yc = dfdbs.P.values
+    yc = dfdbs['P'].values
     yd = dfdbs['incid_dc'].values
     yr = dfdbs['incid_rad'].values
     yt = dfdbs['T'].values
