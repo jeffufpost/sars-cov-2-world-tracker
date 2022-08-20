@@ -185,7 +185,8 @@ vacs_dep = pd.read_csv(io.StringIO(requests.get(vacscsvurl_dep).content.decode('
 #vacs_nat = pd.read_csv(io.StringIO(requests.get(vacscsvurl_nat).content.decode('utf-8')), sep=';', dtype={'fra': str, 'vaccin': int, 'jour': str, 'n_dose1': int, 'n_dose2': int, 'n_dose3': int, 'n_dose4': int, 'n_cum_dose1': int, 'n_cum_dose2': int, 'n_cum_dose3': int, 'n_cum_dose4': int}, parse_dates = ['jour']).drop(columns=['fra'])
 
 cases_cum = cases_cum[cases_cum.sexe==0]
-tests_dep = tests_dep[tests_dep['cl_age90']==0]
+#tests_dep = tests_dep[tests_dep['cl_age90']==0]
+tests_dep = tests_dep.groupby(['dep','jour']).sum().reset_index()  #use this instead as cl_age90 == 0 does not exist anymore, need to sum all others
 
 
 ### Delete data
