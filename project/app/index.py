@@ -295,7 +295,7 @@ fig_fr = create_time_series2(cases_cum_fr.jour, cases_cum_fr.rea.values, cases_c
 
 #del ddd
 
-fig_fr_bar = create_bar_series2(bar_fr.index, bar_fr['P'].values, bar_fr['incid_dc'].values, bar_fr['incid_rad'].values, bar_fr['T'].values, bar_fr['incid_hosp'].values, bar_fr['incid_rea'].values, '<b>Total pour la France</b>')
+fig_fr_bar = create_bar_series2(bar_fr.jour, bar_fr['P'].values, bar_fr['incid_dc'].values, bar_fr['incid_rad'].values, bar_fr['T'].values, bar_fr['incid_hosp'].values, bar_fr['incid_rea'].values, '<b>Total pour la France</b>')
 
 #del dd2
 
@@ -612,7 +612,7 @@ def update_total_barseries(clickData):
     #dfdbs2 = dfdbs2.fillna(0)
     #dfdbs2 = dfdbs2[dfdbs2.cl_age90==0].groupby(['jour']).sum()
     dfdbs = bar_dep[bar_dep.dep==departement]
-    x = dfdbs.index
+    x = dfdbs.jour
     yc = dfdbs['P'].values
     yd = dfdbs['incid_dc'].values
     yr = dfdbs['incid_rad'].values
